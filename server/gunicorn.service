@@ -1,0 +1,12 @@
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/rawlabs
+ExecStart=/home/ubuntu/rawlabs/.env/bin/gunicorn --workers 3 --reload --bind unix:/home/ubuntu/rawlabs/server/gunicorn.sock rawlabs.wsgi:application --access-logfile /home/ubuntu/rawlabs/server/log/gunicorn-access.log --error-logfile /home/ubuntu/rawlabs/server/log/gunicorn-error.log
+
+[Install]
+WantedBy=multi-user.target

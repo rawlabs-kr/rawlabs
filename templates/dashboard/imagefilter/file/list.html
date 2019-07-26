@@ -1,0 +1,159 @@
+{% extends 'dashboard/base.html' %}
+{% load humanize %}
+{% load bootstrap4 %}
+{% block content %}
+    <style>
+        .titleWrap {
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+    <div class="container-fluid">
+        <div class="titleWrap">
+            {% bootstrap_messages %}
+            <h3 class="mt-4 mb-4">파일목록</h3>
+            <button type="button" class="btn btn-primary"
+                    onclick="location.href='{% url 'dashboard:imagefilter_create' %}'">파일
+                추가
+            </button>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <table class="table">
+                    <thead class="thead-dark">
+
+                    <tr>
+                        <th rowspan="2">생성일시</th>
+                        <th rowspan="2">작업명</th>
+                        <th rowspan="2">원본파일</th>
+                        <th rowspan="2">상품수</th>
+                        <th colspan="3">이미지수</th>
+                        <th rowspan="2">분류상태</th>
+                        <th rowspan="2">작업</th>
+                        <th rowspan="2">상품</th>
+                        <th rowspan="2">이미지</th>
+                        <th rowspan="2">삭제</th>
+                    </tr>
+                    <tr>
+                        <th>전체</th>
+                        <th>포함</th>
+                        <th>제외</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for file in object_list %}
+                        <tr>
+                            <td>{{ file.timestamp|date:"Y-m-d" }} {{ file.timestamp|time:"H:i" }}</td>
+                            <td>{{ file.title }}</td>
+                            {% if file.original %}
+                                <td><a href="{{ file.original.url }}" target="_blank">{{ file }}</a></td>
+                            {% else %}
+                                <td>분류 전</td>
+                            {% endif %}
+                            <td>{{ file.num_product|default_if_none:"-"|intcomma }}</td>
+                            <td>{{ file.num_image|default_if_none:"-"|intcomma }}</td>
+                            <td>
+                                {% if file.status == 5 or file.status == 6 or file.status == 7 %}
+                                    {{ file.num_filtered_image.include }}
+                                {% else %}-{% endif %}
+                            </td>
+                            <td>
+                                {% if file.status == 5 or file.status == 6 or file.status == 7 %}
+                                    {{ file.num_filtered_image.exclude }}
+                                {% else %}-{% endif %}
+                            </td>
+                            <td>{{ file.get_status_display }}</td>
+                            <td>
+                                {% if file.status == 0 %}
+                                    <button class="btn btn-primary btn-sm" type="button"
+                                            onclick="fileAction({{ file.id }}, 'checkFile')">파일검증
+                                    </button>
+                                {% elif file.status == 1 %}
+                                    <button class="btn btn-info btn-sm" disabled>파일 검증 중</button>
+                                {% elif file.status == 2 %}
+                                    <button class="btn btn-danger btn-sm" disabled>파일 검증 오류</button>
+                                {% elif file.status == 3 %}
+                                    <button class="btn btn-primary btn-sm" type="button"
+                                            onclick="fileAction({{ file.id }}, 'filterImage')">이미지분류
+                                    </button>
+                                {% elif file.status == 4 %}
+                                    <button class="btn btn-info btn-sm" disabled>이미지 분류중</button>
+                                {% elif file.status == 5 %}
+                                    <button class="btn btn-primary btn-sm" type="button"
+                                            onclick="fileAction({{ file.id }}, 'generateFile')">파일생성
+                                    </button>
+                                {% elif file.status == 6 %}
+                                    <button class="btn btn-info btn-sm" disabled>파일 생성 중</button>
+                                {% elif file.status == 7 %}
+                                    <button class="btn btn-warning btn-sm" onclick="window.open('{{ file.filtered.url }}', target='_blank')">파일 다운로드</button>
+                                {% elif file.status == 8 %}
+                                    <button class="btn btn-danger btn-sm" disabled>파일 생성 오류</button>
+                                {% else %}
+                                    <button class="btn btn-danger" disabled>오류</button>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if file.status > 2 %}
+                                    <a class="btn btn-primary btn-sm"
+                                       href="{% url 'dashboard:imagefilter_product_list' file_id=file.id %}">보기</a>
+                                {% else %}
+                                    <a class="btn btn-primary btn-sm disabled" href="
+                                    {% url 'dashboard:imagefilter_product_list' file_id=file.id %}">보기</a>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if file.status > 2 %}
+                                    <a class="btn btn-primary btn-sm"
+                                       href="{% url 'dashboard:imagefilter_image_list' file_id=file.id %}">보기</a>
+                                {% else %}
+                                    <a class="btn btn-primary btn-sm disabled" href="
+                                    {% url 'dashboard:imagefilter_image_list' file_id=file.id %}">보기</a>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if file.status == 0 or file.status == 2 or file.status == 3 %}
+                                    <button class="btn btn-danger btn-sm" type="button"
+                                            onclick="fileAction({{ file.id }}, 'delete')">삭제
+                                    </button>
+                                {% else %}
+                                    <button class="btn btn-danger btn-sm disabled" type="button">삭제
+                                    </button>
+                                {% endif %}
+                            </td>
+                        <td></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            {% bootstrap_pagination page=page_obj %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block extrascript %}
+    <script type="text/javascript">
+        function fileAction(file_id, action) {
+            $.ajax({
+                url: '{% url 'dashboard:imagefilter_action' %}',
+                method: 'POST',
+                data: {'file_id': file_id, 'action': action, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                dataType: 'json',
+                success: function (response) {
+                    alert(response.message);
+                    window.location.reload()
+                },
+                error: function (response) {
+                    alert('알 수 없는 오류. 관리자에게 문의하세요.');
+                    window.location.reload()
+                }
+            })
+        }
+    </script>
+{% endblock %}

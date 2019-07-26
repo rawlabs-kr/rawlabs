@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>{% block title %}Business Frontpage - Start Bootstrap Template{% endblock %}</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="{% static 'css/business-frontpage.css' %}" rel="stylesheet">
+
+</head>
+
+<body>
+
+<!-- Navigation -->
+{% include 'landing/partial/navbar.html' %}
+
+<!-- Header -->
+{% block header %}{% endblock %}
+
+<!-- Page Content -->
+{% block content %}{% endblock %}
+<!-- /.container -->
+
+<!-- Footer -->
+{% include 'landing/partial/footer.html' %}
+
+<!-- Bootstrap core JavaScript -->
+<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+</body>
+
+</html>

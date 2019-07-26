@@ -1,0 +1,44 @@
+{% extends 'dashboard/base.html' %}
+{% load humanize %}
+{% load bootstrap4 %}
+{% block content %}
+    <style>
+        .titleWrap {
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+    <div class="container-fluid">
+        <div class="titleWrap">
+            {% bootstrap_messages %}
+            <h3 class="mt-4 mb-4">상품목록</h3>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <table class="table">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th>고객사 상품코드</th>
+                        <th>상품명</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for product in object_list %}
+                        <tr>
+                        <td><a href="{% url 'dashboard:imagefilter_product_detail' file_id=product.file_id product_id=product.id %}">{{ product.product_code }}</a> </td>
+                        <td><a href="{% url 'dashboard:imagefilter_product_detail' file_id=product.file_id product_id=product.id %}">{{ product.name}}</a> </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            {% bootstrap_pagination page=page_obj %}
+        </div>
+    </div>
+{% endblock %}

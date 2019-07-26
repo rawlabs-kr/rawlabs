@@ -1,0 +1,48 @@
+{% extends 'dashboard/base.html' %}
+{% load humanize %}
+{% load bootstrap4 %}
+{% block content %}
+    <style>
+        .titleWrap {
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+    <div class="container-fluid">
+        <div class="titleWrap">
+            <h3 class="mt-4 mb-4">사용자 목록</h3>
+            <button type="button" class="btn btn-primary" onclick="location.href='{% url 'dashboard:user_create' %}'">사용자 추가</button>
+        </div>
+        {% bootstrap_messages %}
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <table class="table">
+                    <thead class="thead-dark">
+                    <th>성명</th>
+                    <th>이메일</th>
+                    <th>등록일</th>
+                    <th>마지막 로그인</th>
+                    <th>업체관리자</th>
+                    </thead>
+                    <tbody>
+                    {% for user in object_list %}
+                        <tr>
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.date_joined|date:"Y-m-d"}} {{ user.date_joined|time:"H:i"}}</td>
+                            <td>{{ user.last_login|date:"Y-m-d"}} {{ user.last_login|time:"H:i"}}</td>
+                            <td>{{ user.is_company_admin }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            {% bootstrap_pagination page=page_obj %}
+        </div>
+    </div>
+{% endblock %}

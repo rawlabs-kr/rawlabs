@@ -1,0 +1,23 @@
+{% extends 'landing/base.html' %}
+{% load bootstrap4 %}
+
+{% block content %}
+    <div class="container py-5">
+
+        <div class="row justify-content-center">
+            <div class="col-md-4 mb-5">
+                <h2>로그인</h2>
+                <hr>
+                <form method="post" class="form" novalidate>
+                    {% csrf_token %}
+                    {% bootstrap_form form %}
+                    {% buttons %}
+                     <button type="submit" class="btn btn-primary">로그인</button>
+                    {% endbuttons %}
+                </form>
+            </div>
+        </div>
+        <!-- /.row -->
+
+    </div>
+{% endblock %}

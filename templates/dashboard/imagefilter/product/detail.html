@@ -1,0 +1,32 @@
+{% extends 'dashboard/base.html' %}
+{% load humanize %}
+{% load bootstrap4 %}
+{% block content %}
+    <style>
+        .titleWrap {
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+    <div class="container-fluid">
+        <div class="titleWrap">
+            {% bootstrap_messages %}
+            <h3 class="mt-4 mb-4">{{ product.name }}</h3>
+        </div>
+
+        <div class="row">
+            <div class="col-6">
+                {% autoescape off %}
+                {{ product.original_description }}
+                {% endautoescape %}
+            </div>
+            <div class="col-6">
+                {% autoescape off %}
+                {{ product.filtered_description }}
+                {% endautoescape %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,37 @@
+version: "3"
+services:
+  postgres:
+    image: "postgres"
+    container_name: "rawlabs-postgres"
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker/data/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=rawlabs
+      - POSTGRES_PASSWORD=ghdcksdml3#
+      - POSTGRES_DB=rawlabs
+  redis:
+    image: "redis"
+    container_name: "rawlabs-redis"
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./docker/data/redis:/data/redis
+    restart: always
+
+
+# daemon 실행 : docker-compose up -d
+# 로그 확인 : docker logs -f cardata
+# psql : docker exec -it cardata psql -d temp -U itechs
+# database 생성 : docker exec -it cardata psql -U itechs -c "create database temp"
+
+# callcarm 유저 생성 > CREATE USER itechs WITH PASSWORD 'dkdlxldptm1!'
+# callcrm database 생성 > CREATE DATABASE cardata
+# callcrm 유저에게 callcrm 데이터베이스 모든 권한 부여 > GRANT ALL ON DATABASE cardata TO itechs
+
+# temp db 생성 : docker exec -it cardata psql -d cardata -U itechs -c "create database temp"
+# cardata db 삭제 : docker exec -it cardata psql -d temp -U itechs -c "drop database cardata"
+# cardata db 재생성 : docker exec -it cardata psql -d temp -U itechs -c "create database cardata"
+# cardata db 권한부여 : docker exec -it cardata psql -d temp -U itechs -c "GRANT ALL ON DATABASE cardata TO itechs"
+# docker exec -it redis psql -U itechs -c "create database temp"

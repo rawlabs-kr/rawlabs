@@ -1,0 +1,68 @@
+{% extends 'dashboard/base.html' %}
+{% load render_table from django_tables2 %}
+{% load humanize %}
+{% load bootstrap4 %}
+{% block content %}
+    <style>
+        .titleWrap {
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+    <div class="container-fluid">
+        <div class="titleWrap">
+            {% bootstrap_messages %}
+            <h3 class="mt-4 mb-4">{{ file.title }} 이미지목록</h3>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <table class="table">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th>고객사 상품코드</th>
+                        <th>상품명</th>
+                        <th>이미지</th>
+                        <th>분류결과</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for image in object_list %}
+                        <tr>
+                            <td>{{ image.product__product_code }}</td>
+                            <td>{{ image.product__name }}</td>
+                        <td><button type="button" class="btn btn-primary btn-sm" data-toggle="popover" data-img="{{ image.uri }}" title="미리보기" onclick="window.open('{{ image.uri }}', '_blank')">미리보기</button> </td>
+{#                            <td>{{ image.uri }}</td>#}
+                            <td>{% if image.type == 0 %}분류전{% elif image.type == 1 %}분류실패{% elif image.type == 2 %}
+                                분류중{% elif image.type == 3 %}<span class="text-danger font-weight-bold">제외</span>{% elif image.type == 4 %}포함{% else %}
+                                {{ image.type|default_if_none:"-" }}{% endif %}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            {% bootstrap_pagination page=page_obj %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block extrascript %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('[data-toggle="popover"]').popover({
+                //trigger: 'focus',
+                trigger: 'hover',
+                html: true,
+                content: function () {
+                    return '<img class="img-fluid" src="' + $(this).data('img') + '" />';
+                },
+                title: 'Toolbox'
+            })
+        });
+    </script>
+{% endblock %}

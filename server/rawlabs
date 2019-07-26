@@ -1,0 +1,32 @@
+server {
+        listen 80;
+        server_name amc_car_data;
+        if ($http_x_forwarded_proto = 'http'){
+        return 301 https://$host$request_uri;
+        }
+
+        client_max_body_size 1G;
+
+        access_log /home/ubuntu/rawlabs/server/log/nginx-access.log;
+        error_log /home/ubuntu/rawlabs/server/log/nginx-error.log;
+
+        location /elb-status {
+            access_log off;
+            return 200;
+        }
+
+        location / {
+                include proxy_params;
+                proxy_pass http://unix:/home/ubuntu/rawlabs/server/gunicorn.sock;
+        }
+
+        location /static {
+            autoindex on;
+            alias /home/ubuntu/rawlabs/static/;
+        }
+
+        location /media {
+            autoindex on;
+            alias /home/ubuntu/rawlabs/media/;
+        }
+}
