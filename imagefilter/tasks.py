@@ -92,28 +92,48 @@ def filter_single_image(image_id, excluded_locales):
         image_instance.type = 2
         image_instance.save()
         uri = image_instance.uri
+        # try:
+        #     credentials = service_account.Credentials.from_service_account_file(settings.GOOGLE_VISION_API_CREDENTIAL_PATH)
+        #     client = vision_v1.ImageAnnotatorClient(credentials=credentials)
+        #     image = vision_v1.types.Image()
+        #     image.source.image_uri = uri
+        #     response = client.document_text_detection(image=image)
+        #     data_dict = MessageToDict(response)
+        # except Exception as e:
+        #     image_instance.type = 1  # 분류 실패
+        #     image_instance.error = str(e)
+        #     print(e)
+        # else:
+        #     image_instance.extracted_text = data_dict
+        #     try:
+        #         locale = data_dict['textAnnotations'][0]['locale']
+        #     except:
+        #         image_instance.type = 4
+        #     else:
+        #         if locale in [excluded_locales] if isinstance(excluded_locales, str) else excluded_locales:
+        #             image_instance.type = 3
+        #         else:
+        #             image_instance.type = 4
+        # finally:
+        #     image_instance.filter_dt = timezone.now()
+        #     image_instance.save()
+        credentials = service_account.Credentials.from_service_account_file(settings.GOOGLE_VISION_API_CREDENTIAL_PATH)
+        client = vision_v1.ImageAnnotatorClient(credentials=credentials)
+        image = vision_v1.types.Image()
+        image.source.image_uri = uri
+        response = client.document_text_detection(image=image)
+        data_dict = MessageToDict(response)
+
+        image_instance.extracted_text = data_dict
         try:
-            credentials = service_account.Credentials.from_service_account_file(settings.GOOGLE_VISION_API_CREDENTIAL_PATH)
-            client = vision_v1.ImageAnnotatorClient(credentials=credentials)
-            image = vision_v1.types.Image()
-            image.source.image_uri = uri
-            response = client.document_text_detection(image=image)
-            data_dict = MessageToDict(response)
-        except Exception as e:
-            image_instance.type = 1  # 분류 실패
-            image_instance.error = str(e)
-            print(e)
+            locale = data_dict['textAnnotations'][0]['locale']
+        except:
+            image_instance.type = 4
         else:
-            image_instance.extracted_text = data_dict
-            try:
-                locale = data_dict['textAnnotations'][0]['locale']
-            except:
-                image_instance.type = 4
+            if locale in [excluded_locales] if isinstance(excluded_locales, str) else excluded_locales:
+                image_instance.type = 3
             else:
-                if locale in [excluded_locales] if isinstance(excluded_locales, str) else excluded_locales:
-                    image_instance.type = 3
-                else:
-                    image_instance.type = 4
+                image_instance.type = 4
         finally:
             image_instance.filter_dt = timezone.now()
             image_instance.save()
