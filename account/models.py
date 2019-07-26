@@ -23,7 +23,8 @@ class CustomUserManager(BaseUserManager):
         if not email:
             raise ValueError('이메일 주소는 필수 항목입니다.')
 
-        user = self.model(email=self.normalize_email(email), name=name)
+        user = self.model(email=self.normalize_email(email))
+        user.name = name
         user.set_password(password)
         user.save(using=self._db)
         return user
