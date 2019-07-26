@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import xlrd
 from bs4 import BeautifulSoup as bs
+from celery import chain, group
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
@@ -62,22 +63,23 @@ def filter_image(file_id, excluded_locales):
     from imagefilter.models import File
     file = File.objects.get(id=file_id)
     image_list = Image.objects.values_list('id', flat=True).filter(Q(product__file_id=file_id) & Q(type=0))
-    image_result = []
-    for image_id in image_list:
-        result = filter_single_image.subtask(image_id, excluded_locales)
-        image_result.append(result)
-
-    is_finish = False
-    while is_finish is False:
-        image_result = [i for i in image_result if i.state not in ['FAILURE', 'SUCCESS']]
-        if len(image_result) == 0:
-            file.status = 5
-            file.save()
-            is_finish = True
-        else:
-            time.sleep(5)
-            continue
-
+    # image_result = []
+    # for image_id in image_list:
+    #     result = filter_single_image.delay(image_id, excluded_locales)
+    #     image_result.append(result)
+    #
+    # is_finish = False
+    # while is_finish is False:
+    #     image_result = [i for i in image_result if i.state not in ['FAILURE', 'SUCCESS']]
+    #     if len(image_result) == 0:
+    #         file.status = 5
+    #         file.save()
+    #         is_finish = True
+    #     else:
+    #         time.sleep(5)
+    #         continue
+    g = group(filter_single_image.delay(image_id, excluded_locales) for image_id in image_list)
+    g.apply_async()
 
 
 @app.task
