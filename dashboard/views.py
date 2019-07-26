@@ -146,7 +146,7 @@ class ProductListView(LoginRequiredMixin, ListView):
     template_name = 'dashboard/imagefilter/product/list.html'
 
     def get_queryset(self):
-        return Product.objects.values('product_code', 'name', 'id', 'file_id').filter(file_id=self.kwargs['file_id']).\
+        return Product.objects.values('product_code', 'name', 'id', 'file_id', 'change').filter(file_id=self.kwargs['file_id']).\
             annotate(num_image=Count('image'), num_exclude=Count('image', filter=Q(image__type=3)))
 
 

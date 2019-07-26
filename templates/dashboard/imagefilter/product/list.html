@@ -25,6 +25,7 @@
                         <th>상품명</th>
                         <th>이미지수</th>
                         <th>제외된 이미지수</th>
+                        <th>변경여부</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -34,6 +35,7 @@
                         <td><a href="{% url 'dashboard:imagefilter_product_detail' file_id=product.file_id product_id=product.id %}">{{ product.name}}</a> </td>
                         <td>{{ product.num_image }}</td>
                         <td>{{ product.num_exclude }}</td>
+                        <td>{% if product.change == None %}분류 전{% elif product.change == True %}<span class="text-danger font-weight-bold">변경 있음</span> {% else %}변경 없음{% endif %}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
