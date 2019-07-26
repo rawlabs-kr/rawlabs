@@ -18,6 +18,7 @@ class File(models.Model):
     class Meta:
         verbose_name = '파일'
         verbose_name_plural = verbose_name
+        ordering = ('timestamp',)
 
     timestamp = models.DateTimeField(auto_now_add=True, verbose_name='생성일시')
     title = models.CharField(max_length=100, null=False, blank=False, verbose_name='작업명')
@@ -47,6 +48,7 @@ class Product(models.Model):
         verbose_name = '상품'
         verbose_name_plural = verbose_name
         unique_together = (('file', 'product_code'),)
+        ordering = ('id',)
 
     file = models.ForeignKey(File, null=False, blank=False, verbose_name='파일', on_delete=models.PROTECT,
                              editable=False, db_index=True)
