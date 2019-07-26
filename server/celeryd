@@ -1,14 +1,10 @@
-CELERYD_NODES = 'worker1'
-
-CELERY_BIN = "/home/ubuntu/rawlabs/.env/lib/python3.7/site-packages/celery"
-
-CELERYAPP = "rawlabs"
-
+CELERY_BIN = "/home/ubuntu/rawlabs/.env/bin/celery"
 CELERY_CHDIR = "/home/ubuntu/rawlabs/"
-
 CELERYD_OPTS = "--time-limit=10800 --concurrency=10"
-
+CELERY_CONFIG_MODULE="rawlabs.settings"
+CELERYD_LOG_FILE="/home/ubuntu/rawlabs/server/log/celery-%n%I.log"
+CELERYD_PID_FILE="/home/ubuntu/rawlabs/server/log/celery-run-%n.pid"
 CELERYD_LOG_LEVEL="DEBUG"
 
-CELERYD_LOG_FILE="/home/ubuntu/rawlabs/server/log/celery%n%I.log"
-CELERYD_PID_FILE="/home/ubuntu/rawlabs/server/log/%n.pid"
+export DJANGO_SETTINGS_MODULE="rawlabs.settings"
+
