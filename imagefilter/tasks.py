@@ -15,6 +15,10 @@ from django.utils import timezone
 from imagefilter import exceptions
 from imagefilter.models import Image, Product, File
 from rawlabs.celery import app
+from google.oauth2 import service_account
+from google.cloud import vision_v1
+from imagefilter.models import Image
+from google.protobuf.json_format import MessageToDict
 
 
 @app.task
@@ -78,10 +82,6 @@ def filter_image(file_id, excluded_locales):
 
 @app.task
 def filter_single_image(image_id, excluded_locales):
-    from google.oauth2 import service_account
-    from google.cloud import vision_v1
-    from imagefilter.models import Image
-    from google.protobuf.json_format import MessageToDict
     try:
         image_instance = Image.objects.get(id=image_id)
     except Image.DoesNotExist:
@@ -97,7 +97,7 @@ def filter_single_image(image_id, excluded_locales):
             image.source.image_uri = uri
             response = client.document_text_detection(image=image)
             data_dict = MessageToDict(response)
-        except KeyError as e:
+        except Exception as e:
             image_instance.type = 1  # 분류 실패
             image_instance.error = str(e)
             print(e)
