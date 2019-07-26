@@ -68,18 +68,18 @@ def filter_image(file_id, excluded_locales):
         result = filter_single_image.delay(image_id, excluded_locales)
         image_result.append(result)
 
-    # is_finish = False
-    # while is_finish is False:
-    #     image_result = [i for i in image_result if i.state not in ['FAILURE', 'SUCCESS']]
-    #     if len(image_result) == 0:
-    #         file.status = 5
-    #         file.save()
-    #         is_finish = True
-    #     else:
-    #         time.sleep(5)
-    #         continue
-    # g = group(filter_single_image.delay(image_id, excluded_locales) for image_id in image_list)
-    # g.apply_async()
+    is_finish = False
+    while is_finish is False:
+        image_result = [i for i in image_result if i.state not in ['FAILURE', 'SUCCESS']]
+        if len(image_result) == 0:
+            file.status = 5
+            file.save()
+            is_finish = True
+        else:
+            time.sleep(5)
+            continue
+    g = group(filter_single_image.delay(image_id, excluded_locales) for image_id in image_list)
+    g.apply_async()
 
 
 @app.task

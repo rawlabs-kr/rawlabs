@@ -23,6 +23,8 @@
                     <tr>
                         <th>고객사 상품코드</th>
                         <th>상품명</th>
+                        <th>이미지수</th>
+                        <th>제외된 이미지수</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -30,6 +32,8 @@
                         <tr>
                         <td><a href="{% url 'dashboard:imagefilter_product_detail' file_id=product.file_id product_id=product.id %}">{{ product.product_code }}</a> </td>
                         <td><a href="{% url 'dashboard:imagefilter_product_detail' file_id=product.file_id product_id=product.id %}">{{ product.name}}</a> </td>
+                        <td>{{ product.num_image }}</td>
+                        <td>{{ product.num_exclude }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>

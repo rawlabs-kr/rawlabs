@@ -32,7 +32,7 @@
                     {% for image in object_list %}
                         <tr>
                             <td>{{ image.product__product_code }}</td>
-                            <td>{{ image.product__name }}</td>
+                            <td><a href="{% url 'dashboard:imagefilter_product_detail' file_id=image.product__file_id product_id=image.product_id %}">{{ image.product__name }}</a></td>
                         <td><button type="button" class="btn btn-primary btn-sm" data-toggle="popover" data-img="{{ image.uri }}" title="미리보기" onclick="window.open('{{ image.uri }}', '_blank')">미리보기</button> </td>
 {#                            <td>{{ image.uri }}</td>#}
                             <td>{% if image.type == 0 %}분류전{% elif image.type == 1 %}분류실패{% elif image.type == 2 %}

@@ -3,7 +3,7 @@ import json
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
+from django.db.models import Q, Count, When
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseServerError
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -144,7 +144,8 @@ class ProductListView(LoginRequiredMixin, ListView):
     template_name = 'dashboard/imagefilter/product/list.html'
 
     def get_queryset(self):
-        return Product.objects.values('product_code', 'name', 'id', 'file_id').filter(file_id=self.kwargs['file_id'])
+        return Product.objects.values('product_code', 'name', 'id', 'file_id').filter(file_id=self.kwargs['file_id']).\
+            annotate(num_image=Count('image'), num_exclude=Count('image', filter=Q(image__type=3)))
 
 
 class ProductDetailView(LoginRequiredMixin, View):
@@ -164,4 +165,4 @@ class ImageListView(LoginRequiredMixin, ListView):
     template_name = 'dashboard/imagefilter/image/list.html'
 
     def get_queryset(self):
-        return Image.objects.values('type', 'uri', 'product__product_code', 'product__name').filter(product__file_id=self.kwargs['file_id'])
+        return Image.objects.values('type', 'uri', 'product__product_code', 'product__name', 'product_id', 'product__file_id').filter(product__file_id=self.kwargs['file_id'])
