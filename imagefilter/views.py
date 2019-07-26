@@ -38,7 +38,7 @@ def filter_image_async(file_id):
             file.status = 4
             file.error = None
             file.save()
-            filter_image(file_id, 'zh')
+            filter_image.delay(file_id, 'zh')
             # filter_image.delay(file_id, 'zh')
             return {'result': True, 'message': '요청되었습니다.'}
 
