@@ -24,7 +24,7 @@ class IsAuthenticatedMixin(LoginRequiredMixin):
         if not request.user.is_authenticated:
             return self.handle_no_permission()
         if not request.user.company.is_approved:
-            return self.handle_no_permission()
+            return HttpResponseRedirect(reverse_lazy('landing:not_approved'))
         return super().dispatch(request, *args, **kwargs)
 
 
