@@ -100,6 +100,7 @@ def filter_single_image(image_id, excluded_locales):
         except Exception as e:
             image_instance.type = 1  # 분류 실패
             image_instance.error = str(e)
+            print(e)
         else:
             image_instance.extracted_text = data_dict
             try:
@@ -114,7 +115,6 @@ def filter_single_image(image_id, excluded_locales):
         finally:
             image_instance.filter_dt = timezone.now()
             image_instance.save()
-
 
 
 def excel_to_dict(path, full=False, dict=True):
