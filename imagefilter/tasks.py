@@ -78,8 +78,6 @@ def filter_image(file_id, excluded_locales):
         else:
             time.sleep(5)
             continue
-    g = group(filter_single_image.delay(image_id, excluded_locales) for image_id in image_list)
-    g.apply_async()
 
 
 @app.task
