@@ -18,23 +18,15 @@ from imagefilter.views import check_file_async, filter_image_async, delete_file,
 User = get_user_model()
 
 
-class IsAuthenticatedMixin(LoginRequiredMixin):
-    """Verify that the current user is authenticated."""
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return self.handle_no_permission()
-        if not request.user.company.is_approved:
-            return HttpResponseRedirect(reverse_lazy('landing:not_approved'))
-        return super().dispatch(request, *args, **kwargs)
-
-
-class DashboardIndexView(IsAuthenticatedMixin, TemplateView):
+class DashboardIndexView(LoginRequiredMixin, TemplateView):
     template_name = 'dashboard/index.html'
 
 
-class CompanyDetailView(IsAuthenticatedMixin, View):
+class CompanyDetailView(LoginRequiredMixin, View):
 
     def get(self, request):
+        if not request.user.company.is_approved:
+            return HttpResponseRedirect(reverse_lazy('landing:not_approved'))
         company = request.user.company
         if request.user.is_company_admin:
             form = CompanyUpdateForm(instance=company)
@@ -43,6 +35,8 @@ class CompanyDetailView(IsAuthenticatedMixin, View):
         return render(request, template_name='dashboard/company/detail.html', context={'form': form})
 
     def post(self, request):
+        if not request.user.company.is_approved:
+            return HttpResponseRedirect(reverse_lazy('landing:not_approved'))
         company = request.user.company
         if request.user.is_company_admin:
             form = CompanyUpdateForm(instance=company, data=request.POST)
@@ -57,7 +51,7 @@ class CompanyDetailView(IsAuthenticatedMixin, View):
             return HttpResponseRedirect(reverse_lazy('dashboard:nopermission'))
 
 
-class CompanyUserListView(IsAuthenticatedMixin, ListView):
+class CompanyUserListView(LoginRequiredMixin, ListView):
     paginate_by = 10
     template_name = 'dashboard/users/list.html'
 
@@ -67,7 +61,7 @@ class CompanyUserListView(IsAuthenticatedMixin, ListView):
             company=company)
 
 
-class CompanyUserCreateView(IsAuthenticatedMixin, View):
+class CompanyUserCreateView(LoginRequiredMixin, View):
     def get(self, request):
         if not request.user.is_company_admin:
             return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
@@ -89,7 +83,7 @@ class CompanyUserCreateView(IsAuthenticatedMixin, View):
             return render(request, template_name='dashboard/users/create.html', context={'form': form})
 
 
-class ImageFileListView(IsAuthenticatedMixin, ListView):
+class ImageFileListView(LoginRequiredMixin, ListView):
     paginate_by = 10
     template_name = 'dashboard/imagefilter/file/list.html'
 
@@ -98,12 +92,16 @@ class ImageFileListView(IsAuthenticatedMixin, ListView):
         return File.objects.filter(user=user).annotate()
 
 
-class ImageFileCreateView(IsAuthenticatedMixin, View):
+class ImageFileCreateView(LoginRequiredMixin, View):
     def get(self, request):
+        if not request.user.company.is_approved:
+            return HttpResponseRedirect(reverse_lazy('landing:not_approved'))
         form = FileCreateForm()
         return render(request, template_name='dashboard/imagefilter/file/create.html', context={'form': form})
 
     def post(self, request):
+        if not request.user.company.is_approved:
+            return HttpResponseRedirect(reverse_lazy('landing:not_approved'))
         form = FileCreateForm(request.POST, request.FILES)
         if form.is_valid():
             file = form.save(commit=False)
@@ -114,8 +112,10 @@ class ImageFileCreateView(IsAuthenticatedMixin, View):
             return render(request, template_name='dashboard/imagefilter/file/create.html', context={'form': form})
 
 
-class ImageFileActionView(IsAuthenticatedMixin, View):
+class ImageFileActionView(LoginRequiredMixin, View):
     def post(self, request):
+        if not request.user.company.is_approved:
+            return HttpResponseRedirect(reverse_lazy('landing:not_approved'))
         data = request.POST
         file_id = data.get('file_id')
         try:
@@ -139,7 +139,7 @@ class ImageFileActionView(IsAuthenticatedMixin, View):
         return HttpResponse(json.dumps(context), content_type='application/json')
 
 
-class ProductListView(IsAuthenticatedMixin, ListView):
+class ProductListView(LoginRequiredMixin, ListView):
     paginate_by = 30
     template_name = 'dashboard/imagefilter/product/list.html'
 
@@ -147,7 +147,7 @@ class ProductListView(IsAuthenticatedMixin, ListView):
         return Product.objects.values('product_code', 'name', 'id', 'file_id').filter(file_id=self.kwargs['file_id'])
 
 
-class ProductDetailView(IsAuthenticatedMixin, View):
+class ProductDetailView(LoginRequiredMixin, View):
     def get(self, request, file_id, product_id):
         try:
             product = Product.objects.select_related('file').get(Q(id=product_id) & Q(file_id=file_id))
@@ -159,7 +159,7 @@ class ProductDetailView(IsAuthenticatedMixin, View):
         return render(request, template_name='dashboard/imagefilter/product/detail.html', context={'product': product})
 
 
-class ImageListView(IsAuthenticatedMixin, ListView):
+class ImageListView(LoginRequiredMixin, ListView):
     paginate_by = 30
     template_name = 'dashboard/imagefilter/image/list.html'
 

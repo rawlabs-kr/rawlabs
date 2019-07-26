@@ -28,7 +28,7 @@ class CustomSignupWithCompanyView(View):
 class CustomLoginView(View):
     def get(self, request):
         form = CustomLoginForm()
-        return render(request, template_name = 'landing/account/login.html', context={'form': form})
+        return render(request, template_name='landing/account/login.html', context={'form': form})
 
     def post(self, request):
         form = CustomLoginForm(request.POST)
