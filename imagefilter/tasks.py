@@ -62,7 +62,7 @@ def filter_image(file_id, excluded_locales):
     from imagefilter.models import Image
     from imagefilter.models import File
     file = File.objects.get(id=file_id)
-    image_list = Image.objects.values_list('id', flat=True).filter(Q(product__file_id=file_id) & Q(type=0))
+    image_list = list(Image.objects.values_list('id', flat=True).filter(Q(product__file_id=file_id) & Q(type=0)))
     image_result = []
     for image_id in image_list:
         result = filter_single_image.delay(image_id, excluded_locales)
