@@ -37,11 +37,6 @@ class File(models.Model):
     def __str__(self):
         return self.original.path.split('/')[-1]
 
-    def num_filtered_image(self):
-        image_count = Image.objects.filter(product__file=self).aggregate(exclude=Sum(Case(When(type=3, then=1)), output_field=models.IntegerField()),
-                                              include=Sum(Case(When(type=4, then=1)), output_field=models.IntegerField()))
-        return image_count
-
 
 class Product(models.Model):
     class Meta:

@@ -1,6 +1,7 @@
 {% extends 'dashboard/base.html' %}
 {% load humanize %}
 {% load bootstrap4 %}
+{% load mathfilters %}
 {% block content %}
     <style>
         .titleWrap {
@@ -57,12 +58,12 @@
                             <td>{{ file.num_image|default_if_none:"-"|intcomma }}</td>
                             <td>
                                 {% if file.status == 5 or file.status == 6 or file.status == 7 %}
-                                    {{ file.num_filtered_image.include }}
+                                    {{ file.num_include }}
                                 {% else %}-{% endif %}
                             </td>
                             <td>
                                 {% if file.status == 5 or file.status == 6 or file.status == 7 %}
-                                    {{ file.num_filtered_image.exclude }}
+                                    {{ file.num_exclude }}
                                 {% else %}-{% endif %}
                             </td>
                             <td>{{ file.get_status_display }}</td>
@@ -80,7 +81,7 @@
                                             onclick="fileAction({{ file.id }}, 'filterImage')">이미지분류
                                     </button>
                                 {% elif file.status == 4 %}
-                                    <button class="btn btn-info btn-sm" disabled>이미지 분류중</button>
+                                    <button class="btn btn-info btn-sm" disabled>{{ file.num_processed|intcomma }}/{{ file.num_image|intcomma }}({{ file.num_processed|mul:100|intdiv:file.num_image }}%)</button>
                                 {% elif file.status == 5 %}
                                     <button class="btn btn-primary btn-sm" type="button"
                                             onclick="fileAction({{ file.id }}, 'generateFile')">파일생성
@@ -123,7 +124,7 @@
                                     </button>
                                 {% endif %}
                             </td>
-                        <td></td>
+                            <td>{{ file.num_processing }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>

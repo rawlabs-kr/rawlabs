@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'bootstrap4',
     'django_tables2',
+    'mathfilters',
     'django.contrib.humanize',
     'account.apps.AccountConfig',
     'landing.apps.LandingConfig',
