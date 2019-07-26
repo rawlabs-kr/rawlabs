@@ -97,8 +97,9 @@ def filter_single_image(image_id, excluded_locales):
             image.source.image_uri = uri
             response = client.document_text_detection(image=image)
             data_dict = MessageToDict(response)
-        except:
+        except Exception as e:
             image_instance.type = 1  # 분류 실패
+            image_instance.error = str(e)
         else:
             image_instance.extracted_text = data_dict
             try:
