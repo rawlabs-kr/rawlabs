@@ -18,7 +18,7 @@ class File(models.Model):
     class Meta:
         verbose_name = '파일'
         verbose_name_plural = verbose_name
-        ordering = ('timestamp',)
+        ordering = ('-timestamp',)
 
     timestamp = models.DateTimeField(auto_now_add=True, verbose_name='생성일시')
     title = models.CharField(max_length=100, null=False, blank=False, verbose_name='작업명')
@@ -48,7 +48,7 @@ class Product(models.Model):
         verbose_name = '상품'
         verbose_name_plural = verbose_name
         unique_together = (('file', 'product_code'),)
-        ordering = ('id',)
+        ordering = ('-id',)
 
     file = models.ForeignKey(File, null=False, blank=False, verbose_name='파일', on_delete=models.PROTECT,
                              editable=False, db_index=True)
@@ -69,7 +69,7 @@ class Image(models.Model):
     class Meta:
         verbose_name = '이미지'
         verbose_name_plural = verbose_name
-        ordering = ('product', 'id',)
+        ordering = ('-product', '-id',)
 
     filter_dt = models.DateTimeField(null=True, blank=True, verbose_name='분류일시', editable=False)
     product = models.ForeignKey(Product, null=False, blank=False, verbose_name='상품', on_delete=models.PROTECT, db_index=True)
