@@ -63,11 +63,11 @@ def filter_image(file_id, excluded_locales):
     from imagefilter.models import File
     file = File.objects.get(id=file_id)
     image_list = Image.objects.values_list('id', flat=True).filter(Q(product__file_id=file_id) & Q(type=0))
-    # image_result = []
-    # for image_id in image_list:
-    #     result = filter_single_image.delay(image_id, excluded_locales)
-    #     image_result.append(result)
-    #
+    image_result = []
+    for image_id in image_list:
+        result = filter_single_image.delay(image_id, excluded_locales)
+        image_result.append(result)
+
     # is_finish = False
     # while is_finish is False:
     #     image_result = [i for i in image_result if i.state not in ['FAILURE', 'SUCCESS']]
@@ -78,8 +78,8 @@ def filter_image(file_id, excluded_locales):
     #     else:
     #         time.sleep(5)
     #         continue
-    g = group(filter_single_image.delay(image_id, excluded_locales) for image_id in image_list)
-    g.apply_async()
+    # g = group(filter_single_image.delay(image_id, excluded_locales) for image_id in image_list)
+    # g.apply_async()
 
 
 @app.task
@@ -92,51 +92,32 @@ def filter_single_image(image_id, excluded_locales):
         image_instance.type = 2
         image_instance.save()
         uri = image_instance.uri
-        # try:
-        #     credentials = service_account.Credentials.from_service_account_file(settings.GOOGLE_VISION_API_CREDENTIAL_PATH)
-        #     client = vision_v1.ImageAnnotatorClient(credentials=credentials)
-        #     image = vision_v1.types.Image()
-        #     image.source.image_uri = uri
-        #     response = client.document_text_detection(image=image)
-        #     data_dict = MessageToDict(response)
-        # except Exception as e:
-        #     image_instance.type = 1  # 분류 실패
-        #     image_instance.error = str(e)
-        #     print(e)
-        # else:
-        #     image_instance.extracted_text = data_dict
-        #     try:
-        #         locale = data_dict['textAnnotations'][0]['locale']
-        #     except:
-        #         image_instance.type = 4
-        #     else:
-        #         if locale in [excluded_locales] if isinstance(excluded_locales, str) else excluded_locales:
-        #             image_instance.type = 3
-        #         else:
-        #             image_instance.type = 4
-        # finally:
-        #     image_instance.filter_dt = timezone.now()
-        #     image_instance.save()
-        credentials = service_account.Credentials.from_service_account_file(settings.GOOGLE_VISION_API_CREDENTIAL_PATH)
-        client = vision_v1.ImageAnnotatorClient(credentials=credentials)
-        image = vision_v1.types.Image()
-        image.source.image_uri = uri
-        response = client.document_text_detection(image=image)
-        data_dict = MessageToDict(response)
-
-        image_instance.extracted_text = data_dict
         try:
-            locale = data_dict['textAnnotations'][0]['locale']
-        except:
-            image_instance.type = 4
+            credentials = service_account.Credentials.from_service_account_file(settings.GOOGLE_VISION_API_CREDENTIAL_PATH)
+            client = vision_v1.ImageAnnotatorClient(credentials=credentials)
+            image = vision_v1.types.Image()
+            image.source.image_uri = uri
+            response = client.document_text_detection(image=image)
+            data_dict = MessageToDict(response)
+        except Exception as e:
+            image_instance.type = 1  # 분류 실패
+            image_instance.error = str(e)
+            print(e)
         else:
-            if locale in [excluded_locales] if isinstance(excluded_locales, str) else excluded_locales:
-                image_instance.type = 3
-            else:
+            image_instance.extracted_text = data_dict
+            try:
+                locale = data_dict['textAnnotations'][0]['locale']
+            except:
                 image_instance.type = 4
+            else:
+                if locale in [excluded_locales] if isinstance(excluded_locales, str) else excluded_locales:
+                    image_instance.type = 3
+                else:
+                    image_instance.type = 4
         finally:
             image_instance.filter_dt = timezone.now()
             image_instance.save()
+
 
 
 def excel_to_dict(path, full=False, dict=True):
