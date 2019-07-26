@@ -26,6 +26,7 @@ class CustomUserCreationForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super(CustomUserCreationForm, self).save(commit=False)
+        user.name = self.cleaned_data['name']
         user.email = CustomUserManager.normalize_email(self.cleaned_data['email'])
         user.set_password(self.cleaned_data['password1'])
         if commit:
