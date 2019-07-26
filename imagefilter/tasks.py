@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import xlrd
 from bs4 import BeautifulSoup as bs
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -90,8 +91,7 @@ def filter_single_image(image_id, excluded_locales):
         image_instance.save()
         uri = image_instance.uri
         try:
-            credentials = service_account.Credentials.from_service_account_file(
-                '/Users/cuhong/PycharmProjects/rawlabs/imagefilter/imageapp/utils/rawlabs-image-filter-b49886e323a4.json')
+            credentials = service_account.Credentials.from_service_account_file(settings.GOOGLE_VISION_API_CREDENTIAL_PATH)
             client = vision_v1.ImageAnnotatorClient(credentials=credentials)
             image = vision_v1.types.Image()
             image.source.image_uri = uri
