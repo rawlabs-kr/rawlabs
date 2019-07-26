@@ -16,4 +16,4 @@ app.autodiscover_tasks()
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
 
-# rawlabs cuhong$ celery -A rawlabs worker --loglevel=info --concurrency=20
+# celery -A rawlabs worker --loglevel=info --concurrency=20 -d
