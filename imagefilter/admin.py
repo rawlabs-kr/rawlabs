@@ -5,7 +5,7 @@ from imagefilter.models import File, Product, Image
 
 @admin.register(File)
 class FileAdmin(admin.ModelAdmin):
-    list_display = ['user__company', 'user', 'title', 'num_product', 'num_image', 'status', 'error', 'timestamp']
+    list_display = ['user', 'title', 'num_product', 'num_image', 'status', 'error', 'timestamp']
     list_filter = ['user__company', 'user', 'status']
 
 
