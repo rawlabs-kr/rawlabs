@@ -17,6 +17,9 @@ class Company(models.Model):
     contact = models.CharField(max_length=30, null=False, blank=False, verbose_name='연락처')
     is_approved = models.BooleanField(default=False, verbose_name='사용승인')
 
+    def __str__(self):
+        return self.company_name
+
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, name, password=None):
@@ -66,4 +69,4 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['name']
 
     def __str__(self):
-        return self.email
+        return "{}({})".format(self.name, self.company)
