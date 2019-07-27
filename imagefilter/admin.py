@@ -10,7 +10,7 @@ class FileAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         queryset = super(FileAdmin, self).get_queryset(request)
-        return queryset.valeus('user', 'title', 'num_product', 'num_image', 'status', 'error', 'timestamp')
+        return queryset.values('user', 'title', 'num_product', 'num_image', 'status', 'error', 'timestamp')
 
 
 @admin.register(Product)
