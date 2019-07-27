@@ -8,9 +8,9 @@ class FileAdmin(admin.ModelAdmin):
     list_display = ['user', 'title', 'num_product', 'num_image', 'status', 'error', 'timestamp']
     list_filter = ['user__company', 'user', 'status']
 
-    def get_queryset(self, request):
-        queryset = super(FileAdmin, self).get_queryset(request)
-        return queryset.values('user', 'title', 'num_product', 'num_image', 'status', 'error', 'timestamp')
+    # def get_queryset(self, request):
+    #     queryset = super(FileAdmin, self).get_queryset(request)
+    #     return queryset.values('user', 'title', 'num_product', 'num_image', 'status', 'error', 'timestamp')
 
 
 @admin.register(Product)
