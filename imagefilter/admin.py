@@ -1,3 +1,18 @@
 from django.contrib import admin
 
-# Register your models here.
+from imagefilter.models import File, Product, Image
+
+
+@admin.register(File)
+class FileAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Image)
+class ImageAdmin(admin.ModelAdmin):
+    pass
