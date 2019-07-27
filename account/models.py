@@ -10,6 +10,10 @@ def generate_uuid():
 
 
 class Company(models.Model):
+    class Meta:
+        verbose_name = '업체'
+        verbose_name_plural = verbose_name
+
     hex = models.CharField(primary_key=True, null=False, blank=False, unique=True,
                            default=generate_uuid, max_length=64)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='등록일')
@@ -45,6 +49,10 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
+    class Meta:
+        verbose_name = '사용자'
+        verbose_name_plural = verbose_name
+
     email = models.EmailField(
         verbose_name='이메일',
         max_length=255,
