@@ -8,3 +8,6 @@ restart imagefilter_celery
 # google cloud flatform
 ## production key rawlabs-image-filter-2d9bb63692c5.json
 ## dev key rawlabs-image-filter-a3dfa7db52e2.json
+
+
+# celery -A rawlabs worker --loglevel=info --concurrency=20
