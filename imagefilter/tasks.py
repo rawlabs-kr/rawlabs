@@ -191,24 +191,55 @@ def generate_product_description(file_id):
     while is_finish is False:
         product_result = [p for p in product_result if p.state not in ['FAILURE', 'SUCCESS']]
         if len(product_result) == 0:
-            type_dict = {'샵링커상품코드': np.str, '고객사상품코드': np.str, '상품명': np.str, '상품약어': np.str,
-                         '샵링커카테고리': np.str, '모델명': np.str, '모델명No': np.str, '시작가격': np.int32, '공급가격': np.int32,
-                         '판매가격': np.int32, '시중가격': np.int32, '공급가능수량': np.int32, '과세': np.str, '거래처아이디': np.str,
-                         '제조사': np.str, '원산지': np.str, '판매지역': np.str, '남여구분': np.str, '판매상태': np.str,
-                         '옵션명1': np.str, '옵션항목1': np.str, '옵션명2': np.str, '옵션항목2': np.str, '옵션명3': np.str,
-                         '옵션항목3': np.str, '상품이미지': np.str, '배송비부과여부': np.str, '배송비': np.str,
-                         '상품요약설명': np.str, '상품상세설명': np.str, '브랜드명': np.str, '고객사분류코드(대)': np.str,
-                         '고객사분류코드(중)': np.str, '고객사분류코드(소)': np.str, '고객사분류코드(세)': np.str,
-                         '자체 공급가': np.int32, '자체 판매가': np.int32, '자체 시중가': np.int32, '옥션&지마켓 이미지': np.str,
-                         '쿠팡 이미지': np.str, '11번가 목록용': np.str, '종합몰용이미지': np.str, '카운터사용여부': np.str,
-                         '배송정보': np.str, 'A/S정보': np.str, '등록일자': None, '최종수정일자': np.str, '상품이미지.1': np.str}
+            type_dict = {'샵링커상품코드': np.str, '고객사상품코드': np.str, '상품명': np.str, '약어': np.str,
+                         '샵링커카테고리코드': np.str, '모델명': np.str, '모델No': np.str, '쇼핑몰시작가': np.int32, '쇼핑몰공급가': np.int32,
+                         '쇼핑몰판매가': np.int32, '쇼핑몰시중가': np.int32, '수량': np.int32, '과세': np.str, '매입처ID': np.str,
+                         '제조사': np.str,
+                         '원산지': np.str, '판매지역': np.str, '남여구분': np.str, '판매상태': np.str, '옵션명1': np.str, '옵션항목1': np.str,
+                         '옵션명2': np.str, '옵션항목2': np.str, '옵션명3': np.str, '옵션항목3': np.str, '상품대표이미지': np.str,
+                         '배송비형태': np.str, '배송비': np.str, '상품요약설명': np.str, '상품상세설명': np.str, '신 상세설명': np.str,
+                         '추가구성 상세': np.str, '광고홍보 상세설명': np.str, '브랜드': np.str, '고객사대분류코드': np.str,
+                         '고객사중분류코드': np.str, '고객사소분류코드': np.str, '고객사세분류코드': np.str, '매입처공급가': np.int,
+                         '매입처판매가': np.int, '매입처시중가': np.int, '옥션&지마켓용 이미지': np.str, '쿠팡 외 이미지': np.str,
+                         '11번가용 이미지': np.str, '종합몰용이미지': np.str, '카운터 사용여부': np.str, '배송정보': np.str, 'A/S정보': np.str,
+                         '부가이미지6': np.str,
+                         '부가이미지7': np.str, '부가이미지8': np.str, '부가이미지9': np.str, '부가이미지10': np.str, '부가이미지11': np.str,
+                         '부가이미지12': np.str,
+                         '옥션&지마켓 추가이미지1': np.str, '옥션&지마켓 추가이미지2': np.str, '위메프(460*460, 500*500)': np.str,
+                         '위메프(580*320)': np.str,
+                         '발행일/제조일': np.str, 'W컨셉용이미지': np.str, '인증번호': np.str, '롯데홈(사용안함)': np.str,
+                         '롯데홈(사용안함).1': np.str,
+                         '롯데홈(사용안함).2': np.str, '유효기간': None, '성인상품여부': np.str, '반품지주소': np.str, '반품지우편번호': np.str,
+                         '출하지주소': np.str,
+                         '출하지우편번호': np.str, '옥션 이미지 삭제': np.str, '지마켓 이미지 삭제': np.str, '11번가 이미지 삭제': np.str,
+                         '종합몰 이미지 삭제': np.str,
+                         '품목고시 코드': np.str, '품목 값1': np.str, '품목 값2': np.str, '품목 값3': np.str, '품목 값4': np.str,
+                         '품목 값5': np.str, '품목 값6': np.str,
+                         '품목 값7': np.str, '품목 값8': np.str, '품목 값9': np.str, '품목 값10': np.str, '품목 값11': np.str,
+                         '품목 값12': np.str,
+                         '품목 값13': np.str, '품목 값14': np.str, '품목 값15': np.str, '인증항목 코드1': np.str, '기관명1': np.str,
+                         '인증번호(심의번호)1': np.str,
+                         '신고번호1': np.str, '인증발급일자1': None, '유효시작일자1': None, '유효종료일자1': None, '인증정보이미지1': np.str,
+                         '인증항목 코드2': np.str,
+                         '기관명2': np.str, '인증번호(심의번호)2': np.str, '신고번호2': np.str, '인증발급일자2': None, '유효시작일자2': None,
+                         '유효종료일자2': None,
+                         '인증정보이미지2': np.str, '인증항목 코드3': np.str, '기관명3': np.str, '인증번호(심의번호)3': np.str, '신고번호3': np.str,
+                         '인증발급일자3': None,
+                         '유효시작일자3': None, '유효종료일자3': None, '인증정보이미지3': np.str, '인증항목 코드4': np.str, '기관명4': np.str,
+                         '인증번호(심의번호)4': np.str,
+                         '신고번호4': np.str, '인증발급일자4': None, '유효시작일자4': None, '유효종료일자4': None, '인증정보이미지4': np.str,
+                         '인증항목 코드5': np.str,
+                         '기관명5': np.str, '인증번호(심의번호)5': np.str, '신고번호5': np.str, '인증발급일자5': None, '유효시작일자5': None,
+                         '유효종료일자5': None,
+                         '인증정보이미지5': np.str, '하프클럽 가로배너\nGS/이지웰 모바일 이미지\nB쇼핑 MC이미지': np.str, '품질표시 TAG': np.str,
+                         '무게': np.str}
             data_list = pd.read_excel(file.original.path, dtype=type_dict)
             # data_list = excel_to_dict(file.original.path, full=True, dict=False)
             new_product_list = Product.objects.values('product_code', 'filtered_description').filter(Q(file_id=file_id) & Q(change=True))
             for new_product in new_product_list:
                 data_list.loc[data_list['고객사상품코드'] == int(new_product['product_code']), '상품상세설명'] = new_product['filtered_description']
             new_file_name = file.original.path.split('.xlsx')[0] + '_filtered.xls'
-            data_list.to_excel(new_file_name, index=False, columns=['샵링커상품코드', '고객사상품코드', '상품명', '상품약어', '샵링커카테고리', '모델명', '모델명No', '시작가격', '공급가격', '판매가격', '시중가격', '공급가능수량', '과세', '거래처아이디', '제조사', '원산지', '판매지역', '남여구분', '판매상태', '옵션명1', '옵션항목1', '옵션명2', '옵션항목2', '옵션명3', '옵션항목3', '상품이미지', '배송비부과여부', '배송비', '상품요약설명', '상품상세설명', '브랜드명', '고객사분류코드(대)', '고객사분류코드(중)', '고객사분류코드(소)', '고객사분류코드(세)', '자체 공급가', '자체 판매가', '자체 시중가', '옥션&지마켓 이미지', '쿠팡 이미지', '11번가 목록용', '종합몰용이미지', '카운터사용여부', '배송정보', 'A/S정보', '등록일자', '최종수정일자', '상품이미지'])
+            data_list.to_excel(new_file_name, index=False, columns=list(type_dict.keys()))
 
             # 파일 정리
             file.filtered = new_file_name.split('/media/')[1]
@@ -218,3 +249,6 @@ def generate_product_description(file_id):
         else:
             time.sleep(5)
             continue
+
+
+
