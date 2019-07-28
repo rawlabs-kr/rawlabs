@@ -9,7 +9,7 @@
                 <form method="post" novalidate enctype="multipart/form-data">
                     {% csrf_token %}
                     {% bootstrap_form form %}
-                    {% if request.user.is_company_admin %}
+                    {% if request.user.company.is_approved %}
                         {% buttons %}
                             <button type="submit" class="btn btn-primary">등록</button>
                         {% endbuttons %}
