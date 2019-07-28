@@ -20,4 +20,5 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Image)
 class ImageAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['product', 'uri', 'type', 'filter_dt', 'error']
+    list_filter = ['product', 'type']
