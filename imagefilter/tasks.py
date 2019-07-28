@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import json
 import time
 from time import sleep
 
@@ -64,8 +65,11 @@ def filter_image(file_id, excluded_locales):
     file = File.objects.get(id=file_id)
     image_list = list(Image.objects.values_list('id', flat=True).filter(Q(product__file_id=file_id) & Q(type=0)))
     image_result = []
+    with open(settings.GOOGLE_VISION_API_CREDENTIAL_PATH, 'r') as json_credential:
+        google_credential_info = json.loads(json_credential.read())
+
     for image_id in image_list:
-        result = filter_single_image.delay(image_id, excluded_locales)
+        result = filter_single_image.delay(image_id, excluded_locales, google_credential_info=google_credential_info)
         image_result.append(result)
 
     is_finish = False
@@ -81,7 +85,7 @@ def filter_image(file_id, excluded_locales):
 
 
 @app.task
-def filter_single_image(image_id, excluded_locales):
+def filter_single_image(image_id, excluded_locales, google_credential_info):
     try:
         image_instance = Image.objects.get(id=image_id)
     except Image.DoesNotExist:
@@ -91,7 +95,8 @@ def filter_single_image(image_id, excluded_locales):
         image_instance.save()
         uri = image_instance.uri
         try:
-            credentials = service_account.Credentials.from_service_account_file(settings.GOOGLE_VISION_API_CREDENTIAL_PATH)
+            # credentials = service_account.Credentials.from_service_account_file(settings.GOOGLE_VISION_API_CREDENTIAL_PATH)
+            credentials = service_account.Credentials.from_service_account_info(google_credential_info)
             client = vision_v1.ImageAnnotatorClient(credentials=credentials)
             image = vision_v1.types.Image()
             image.source.image_uri = uri
