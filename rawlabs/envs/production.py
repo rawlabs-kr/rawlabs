@@ -24,10 +24,10 @@ SECRET_KEY = get_secret('SECRET_KEY')
 
 PRODUCTION = True
 
-DEBUG = False
-
 
 ALLOWED_HOSTS = ['.rawlabs.io', '13.125.23.131', ]
+DEBUG = False
+
 
 DATABASES = {
     'default': {
