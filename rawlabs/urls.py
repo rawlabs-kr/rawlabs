@@ -12,7 +12,8 @@ urlpatterns = [
     path('', include('landing.urls', namespace='landing')),
     path('admin/', admin.site.urls),
     path('account/', include('account.urls', namespace='account')),
-    path('dashboard/', include('dashboard.urls', namespace='dashboard'))
+    path('dashboard/', include('dashboard.urls', namespace='dashboard')),
+    path('jet/', include('jet.urls'))
 ]
 
 if settings.DEBUG:
