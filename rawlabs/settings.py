@@ -30,7 +30,8 @@ INSTALLED_APPS = [
     'account.apps.AccountConfig',
     'landing.apps.LandingConfig',
     'imagefilter.apps.ImagefilterConfig',
-    'dashboard.apps.DashboardConfig'
+    'dashboard.apps.DashboardConfig',
+    'utils.apps.UtilsConfig'
 ]
 
 MIDDLEWARE = [
@@ -116,3 +117,13 @@ CELERY_TIMEZONE = TIME_ZONE
 CELERY_WORKER_DISABLE_RATE_LIMITS = True
 
 GOOGLE_VISION_API_CREDENTIAL_PATH = env.GOOGLE_VISION_API_CREDENTIAL_PATH
+
+
+# Email Backend
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST_USER = env.GMAIL_USERNAME
+EMAIL_HOST_PASSWORD = env.GMAIL_PASSWORD
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

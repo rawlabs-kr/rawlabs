@@ -72,3 +72,5 @@ class Image(models.Model):
     extracted_text = JSONField(null=True, blank=True, verbose_name='이미지 분석 결과')
     type = models.IntegerField(choices=IMAGE_TYPE_CHOICES, default=0, verbose_name='분류결과')
     error = models.TextField(null=True, blank=True)
+    google_api_error_code = models.IntegerField(null=True, blank=True, verbose_name='구글 에러 코드')
+    google_api_error_msg = models.TextField(null=True, blank=True, verbose_name='구글 에러 메시지')

@@ -95,7 +95,6 @@ def filter_single_image(image_id, excluded_locales, google_credential_info):
         image_instance.save()
         uri = image_instance.uri
         try:
-            # credentials = service_account.Credentials.from_service_account_file(settings.GOOGLE_VISION_API_CREDENTIAL_PATH)
             credentials = service_account.Credentials.from_service_account_info(google_credential_info)
             client = vision_v1.ImageAnnotatorClient(credentials=credentials)
             image = vision_v1.types.Image()
@@ -110,8 +109,18 @@ def filter_single_image(image_id, excluded_locales, google_credential_info):
             image_instance.extracted_text = data_dict
             try:
                 locale = data_dict['textAnnotations'][0]['locale']
-            except:
-                image_instance.type = 4
+            except KeyError:
+                google_error_dict = data_dict['error']
+                image_instance.type = 1
+                image_instance.google_api_error_code = google_error_dict['code']
+                image_instance.google_api_error_msg = google_error_dict['message']
+                if google_error_dict['code'] == 3:
+                    image_instance.error = '이미지가 존재하지 않습니다.'
+                else:
+                    image_instance.error = 'Google Vision Api 에러'
+            except Exception as e:
+                image_instance.type = 1
+                image_instance.error = '관리자 문의()'.format(str(e))
             else:
                 if locale in [excluded_locales] if isinstance(excluded_locales, str) else excluded_locales:
                     image_instance.type = 3
