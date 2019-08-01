@@ -108,10 +108,8 @@ def filter_single_image(image_id, excluded_locales, google_credential_info):
         else:
             image_instance.extracted_text = data_dict
             image_instance.save()
-
             text_annotations = data_dict.get('textAnnotations', None)
             error = data_dict.get('error', None)
-
             if text_annotations:
                 locale = text_annotations[0]['locale']
                 if locale in [excluded_locales] if isinstance(excluded_locales, str) else excluded_locales:
@@ -124,6 +122,9 @@ def filter_single_image(image_id, excluded_locales, google_credential_info):
                 image_instance.error = error['message']
                 image_instance.google_api_error_code = error['code']
                 image_instance.google_api_error_msg = error['message']
+            elif data_dict == {}:
+                # vision api가 빈 dictionary를 반환하면 글자가 없다고 판단한 것
+                image_instance.type = 4
             else:
                 image_instance.type = 1
                 image_instance.error = '관리자 문의'
