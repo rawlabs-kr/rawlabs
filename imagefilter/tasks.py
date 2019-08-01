@@ -107,29 +107,29 @@ def filter_single_image(image_id, excluded_locales, google_credential_info):
             print(e)
         else:
             image_instance.extracted_text = data_dict
-            try:
-                locale = data_dict['textAnnotations'][0]['locale']
-            except KeyError:
-                google_error_dict = data_dict['error']
-                image_instance.type = 1
-                image_instance.google_api_error_code = google_error_dict['code']
-                image_instance.google_api_error_msg = google_error_dict['message']
-                if google_error_dict['code'] == 3:
-                    image_instance.error = '이미지가 존재하지 않습니다.'
-                else:
-                    image_instance.error = 'Google Vision Api 에러'
-            except Exception as e:
-                image_instance.type = 1
-                image_instance.error = '관리자 문의()'.format(str(e))
-            else:
+            image_instance.save()
+
+            text_annotations = data_dict.get('textAnnotations', None)[0]['locale']
+            error = data_dict.get('error', None)
+
+            if text_annotations:
+                locale = text_annotations[0]['locale']
                 if locale in [excluded_locales] if isinstance(excluded_locales, str) else excluded_locales:
                     image_instance.type = 3
                 else:
                     image_instance.type = 4
+            elif error:
+                error = error
+                image_instance.type = 1
+                image_instance.error = error['message']
+                image_instance.google_api_error_code = error['code']
+                image_instance.google_api_error_msg = error['message']
+            else:
+                image_instance.type = 1
+                image_instance.error = '관리자 문의'
         finally:
             image_instance.filter_dt = timezone.now()
             image_instance.save()
-
 
 
 def excel_to_dict(path, full=False, dict=True):
@@ -263,6 +263,7 @@ def generate_product_description(file_id):
         else:
             time.sleep(5)
             continue
+
 
 
 
