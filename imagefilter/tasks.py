@@ -120,8 +120,13 @@ def filter_single_image(image_id, excluded_locales, google_credential_info):
                 error = error
                 image_instance.type = 1
                 image_instance.error = error['message']
-                image_instance.google_api_error_code = error['code']
-                image_instance.google_api_error_msg = error['message']
+                google_err_code = error['code']
+                google_err_message = error['message']
+                image_instance.google_api_error_code = google_err_code
+                if google_err_code == 3:
+                    image_instance.google_api_error_msg = '존재하지 않는 url'
+                else:
+                    image_instance.google_api_error_msg = google_err_message
             elif data_dict == {}:
                 # vision api가 빈 dictionary를 반환하면 글자가 없다고 판단한 것
                 image_instance.type = 4

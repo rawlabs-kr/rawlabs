@@ -16,7 +16,7 @@
             {% bootstrap_messages %}
             <h3 class="mt-4 mb-4">파일목록</h3>
             <button type="button" class="btn btn-primary"
-                    onclick="location.href='{% url 'dashboard:imagefilter_create' %}'">파일
+                    onclick="location.href='{% url 'dashboard:imagefilter:create' %}'">파일
                 추가
             </button>
         </div>
@@ -99,19 +99,19 @@
                             <td>
                                 {% if file.status > 2 %}
                                     <a class="btn btn-primary btn-sm"
-                                       href="{% url 'dashboard:imagefilter_product_list' file_id=file.id %}">보기</a>
+                                       href="{% url 'dashboard:imagefilter:product_list' file_id=file.id %}">보기</a>
                                 {% else %}
                                     <a class="btn btn-primary btn-sm disabled" href="
-                                    {% url 'dashboard:imagefilter_product_list' file_id=file.id %}">보기</a>
+                                    {% url 'dashboard:imagefilter:product_list' file_id=file.id %}">보기</a>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if file.status > 2 %}
                                     <a class="btn btn-primary btn-sm"
-                                       href="{% url 'dashboard:imagefilter_image_list' file_id=file.id %}">보기</a>
+                                       href="{% url 'dashboard:imagefilter:image_list' file_id=file.id %}">보기</a>
                                 {% else %}
                                     <a class="btn btn-primary btn-sm disabled" href="
-                                    {% url 'dashboard:imagefilter_image_list' file_id=file.id %}">보기</a>
+                                    {% url 'dashboard:imagefilter:image_list' file_id=file.id %}">보기</a>
                                 {% endif %}
                             </td>
                             <td>
@@ -142,7 +142,7 @@
     <script type="text/javascript">
         function fileAction(file_id, action) {
             $.ajax({
-                url: '{% url 'dashboard:imagefilter_action' %}',
+                url: '{% url 'dashboard:imagefilter:action' %}',
                 method: 'POST',
                 data: {'file_id': file_id, 'action': action, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
                 dataType: 'json',
