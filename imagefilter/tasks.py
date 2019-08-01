@@ -109,7 +109,7 @@ def filter_single_image(image_id, excluded_locales, google_credential_info):
             image_instance.extracted_text = data_dict
             image_instance.save()
 
-            text_annotations = data_dict.get('textAnnotations', None)[0]['locale']
+            text_annotations = data_dict.get('textAnnotations', None)
             error = data_dict.get('error', None)
 
             if text_annotations:
