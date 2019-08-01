@@ -108,7 +108,7 @@ class ImageFileCreateView(LoginRequiredMixin, View):
             file = form.save(commit=False)
             file.user = request.user
             file.save()
-            return HttpResponseRedirect(reverse_lazy('dashboard:imagefilter_list'))
+            return HttpResponseRedirect(reverse_lazy('dashboard:imagefilter:list'))
         else:
             return render(request, template_name='dashboard/imagefilter/file/create.html', context={'form': form})
 
