@@ -167,4 +167,4 @@ class ImageListView(LoginRequiredMixin, ListView):
     template_name = 'dashboard/imagefilter/image/list.html'
 
     def get_queryset(self):
-        return Image.objects.values('type', 'uri', 'product__product_code', 'product__name', 'product_id', 'product__file_id').filter(product__file_id=self.kwargs['file_id'])
+        return Image.objects.values('type', 'uri', 'product__product_code', 'product__name', 'product_id', 'product__file_id', 'error').filter(product__file_id=self.kwargs['file_id'])
