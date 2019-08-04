@@ -191,5 +191,15 @@ class ImageListView(LoginRequiredMixin, ListView):
         filter = Q(product__file=file)
         if status:
             filter = filter.add(Q(status=status), Q.AND)
-        return Image.objects.values('id', 'type', 'uri', 'product__product_code', 'product__name', 'product_id',
+        queryset = Image.objects.values('id', 'type', 'uri', 'product__product_code', 'product__name', 'product_id',
                                     'product__file_id', 'error').filter(filter)
+
+        self.file = file
+        self.image_count = queryset.count
+        return queryset
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(ImageListView, self).get_context_data(*args, **kwargs)
+        context['file'] = self.file
+        context['image_count'] = self.image_count
+        return context
