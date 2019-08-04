@@ -28,6 +28,7 @@
 
                     <tr>
                         <th rowspan="2">생성일시</th>
+                        <th rowspan="2">사용자</th>
                         <th rowspan="2">작업명</th>
                         <th rowspan="2">상품수</th>
                         <th colspan="1">이미지</th>
@@ -46,6 +47,7 @@
                     {% for file in object_list %}
                         <tr>
                             <td>{{ file.timestamp|date:"Y-m-d" }} {{ file.timestamp|time:"H:i" }}</td>
+                            <td>{{ file.user.name }}</td>
                             <td>{{ file.title }}</td>
                             <td>{{ file.num_product|default_if_none:"-"|intcomma }}</td>
                             <td>

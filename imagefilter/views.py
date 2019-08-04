@@ -102,7 +102,7 @@ class ImageFileListView(LoginRequiredMixin, ListView):
             num_include=Count('product__image', filter=Q(product__image__type=4)),
             num_exclude=Count('product__image', filter=Q(product__image__type=3)),
             num_error=Count('product__image', filter=Q(product__image__type=1)),
-            num_processed=Count('product__image', filter=Q(product__image__type__in=[1, 3, 4])))
+            num_processed=Count('product__image', filter=Q(product__image__type__in=[1, 3, 4]))).select_related('user')
 
 
 class ImageFileCreateView(LoginRequiredMixin, View):
