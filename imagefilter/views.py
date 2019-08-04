@@ -182,18 +182,21 @@ class ImageListView(LoginRequiredMixin, ListView):
     paginate_by = 30
     template_name = 'dashboard/imagefilter/image/list.html'
 
-    def __init__(self):
-        super(ImageListView, self).__init__()
-        file_id = self.kwargs.get('file_id', None)
-        self.file = get_object_or_404(File, id=file_id)
-
     def get_queryset(self):
-        if not self.file.has_permission(self.request.user):
+        file_id = self.kwargs.get('file_id', None)
+        file = get_object_or_404(File, id=file_id)
+        if not file.has_permission(self.request.user):
             return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
         status = self.request.GET.get('status', None)
-        filter = Q(product__file=self.file)
+        filter = Q(product__file=file)
         if status:
             filter = filter.add(Q(status=status), Q.AND)
         return Image.objects.values('id', 'type', 'uri', 'product__product_code', 'product__name', 'product_id',
                                     'product__file_id', 'error').filter(filter)
 
+    def get_context_data(self, *args, **kwargs):
+        file_id = self.kwargs.get('file_id', None)
+        file = get_object_or_404(File, id=file_id)
+        context = super(ImageListView, self).get_context_data(*args, **kwargs)
+        context['file'] = file
+        return context
