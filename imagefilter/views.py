@@ -196,7 +196,7 @@ class ImageListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *args, **kwargs):
         file_id = self.kwargs.get('file_id', None)
-        file = get_object_or_404(File, id=file_id)
+        file = get_object_or_404(File.objects.prefetch_related('product_set__image_set'), id=file_id)
         context = super(ImageListView, self).get_context_data(*args, **kwargs)
         context['file'] = file
         return context
