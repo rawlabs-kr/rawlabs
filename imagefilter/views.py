@@ -193,10 +193,3 @@ class ImageListView(LoginRequiredMixin, ListView):
             filter = filter.add(Q(status=status), Q.AND)
         return Image.objects.values('id', 'type', 'uri', 'product__product_code', 'product__name', 'product_id',
                                     'product__file_id', 'error').filter(filter)
-
-    def get_context_data(self, *args, **kwargs):
-        file_id = self.kwargs.get('file_id', None)
-        file = get_object_or_404(File.objects.prefetch_related('product_set__image_set'), id=file_id)
-        context = super(ImageListView, self).get_context_data(*args, **kwargs)
-        context['file'] = file
-        return context
