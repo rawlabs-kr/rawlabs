@@ -103,7 +103,7 @@ class ImageFileListView(LoginRequiredMixin, ListView):
             num_exclude=Count('product__image', filter=Q(product__image__type=3)),
             num_error=Count('product__image', filter=Q(product__image__type=1)),
             num_processed=Count('product__image', filter=Q(product__image__type__in=[1, 3, 4]))).\
-            values('id', 'timestamp', 'title', 'user__name', 'original', 'filtered', 'status')
+            values('id', 'timestamp', 'title', 'user__name', 'original', 'filtered', 'get_status_display')
 
 
 class ImageFileCreateView(LoginRequiredMixin, View):
