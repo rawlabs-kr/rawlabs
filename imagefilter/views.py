@@ -86,6 +86,7 @@ def generate_file(file_id):
 
 User = get_user_model()
 
+
 class ImageFileListView(LoginRequiredMixin, ListView):
     paginate_by = 10
     template_name = 'dashboard/imagefilter/file/list.html'
@@ -94,15 +95,14 @@ class ImageFileListView(LoginRequiredMixin, ListView):
         user = self.request.user
         if user.is_company_admin:
             company_user_list = User.objects.filter(company=user.company)
-            return File.objects.filter(user__in=company_user_list).annotate(num_include=Count('product__image', filter=Q(product__image__type=4)),
-                                                           num_exclude=Count('product__image', filter=Q(product__image__type=3)),
-                                                           num_error=Count('product__image', filter=Q(product__image__type=1)),
-                                                           num_processed=Count('product__image', filter=Q(product__image__type__in=[1, 3, 4])))
+            filter = Q(user__in=company_user_list)
         else:
-            return File.objects.filter(user=user).annotate(num_include=Count('product__image', filter=Q(product__image__type=4)),
-                                                           num_exclude=Count('product__image', filter=Q(product__image__type=3)),
-                                                           num_error=Count('product__image', filter=Q(product__image__type=1)),
-                                                           num_processed=Count('product__image', filter=Q(product__image__type__in=[1, 3, 4])))
+            filter = Q(user=user)
+        return File.objects.filter(filter).annotate(
+            num_include=Count('product__image', filter=Q(product__image__type=4)),
+            num_exclude=Count('product__image', filter=Q(product__image__type=3)),
+            num_error=Count('product__image', filter=Q(product__image__type=1)),
+            num_processed=Count('product__image', filter=Q(product__image__type__in=[1, 3, 4])))
 
 
 class ImageFileCreateView(LoginRequiredMixin, View):
@@ -158,7 +158,7 @@ class ProductListView(LoginRequiredMixin, ListView):
         if not file.has_permission:
             return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
 
-        return Product.objects.values('product_code', 'name', 'id', 'file_id', 'change').filter(file=file).\
+        return Product.objects.values('product_code', 'name', 'id', 'file_id', 'change').filter(file=file). \
             annotate(num_image=Count('image'), num_exclude=Count('image', filter=Q(image__type=3)))
 
 
@@ -187,4 +187,5 @@ class ImageListView(LoginRequiredMixin, ListView):
         file = get_object_or_404(File, id=file_id)
         if not file.has_permission:
             return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
-        return Image.objects.values('id', 'type', 'uri', 'product__product_code', 'product__name', 'product_id', 'product__file_id', 'error').filter(product__file=file)
+        return Image.objects.values('id', 'type', 'uri', 'product__product_code', 'product__name', 'product_id',
+                                    'product__file_id', 'error').filter(product__file=file)
