@@ -1,15 +1,17 @@
 import json
 
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.db.models import Count, Q
 from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import ListView
 
+from account.models import Company
 from imagefilter.forms import FileCreateForm
 from imagefilter.models import File, Product, Image
 from imagefilter.tasks import create_product_and_image, filter_image, generate_product_description
@@ -82,16 +84,25 @@ def generate_file(file_id):
             return {'result': True, 'message': '요청되었습니다.'}
 
 
+User = get_user_model()
+
 class ImageFileListView(LoginRequiredMixin, ListView):
     paginate_by = 10
     template_name = 'dashboard/imagefilter/file/list.html'
 
     def get_queryset(self):
         user = self.request.user
-        return File.objects.filter(user=user).annotate(num_include=Count('product__image', filter=Q(product__image__type=4)),
-                                                       num_exclude=Count('product__image', filter=Q(product__image__type=3)),
-                                                       num_error=Count('product__image', filter=Q(product__image__type=1)),
-                                                       num_processed=Count('product__image', filter=Q(product__image__type__in=[1, 3, 4])))
+        if user.is_company_admin:
+            company_user_list = User.objects.filter(company=user.company)
+            return File.objects.filter(user__in=company_user_list).annotate(num_include=Count('product__image', filter=Q(product__image__type=4)),
+                                                           num_exclude=Count('product__image', filter=Q(product__image__type=3)),
+                                                           num_error=Count('product__image', filter=Q(product__image__type=1)),
+                                                           num_processed=Count('product__image', filter=Q(product__image__type__in=[1, 3, 4])))
+        else:
+            return File.objects.filter(user=user).annotate(num_include=Count('product__image', filter=Q(product__image__type=4)),
+                                                           num_exclude=Count('product__image', filter=Q(product__image__type=3)),
+                                                           num_error=Count('product__image', filter=Q(product__image__type=1)),
+                                                           num_processed=Count('product__image', filter=Q(product__image__type__in=[1, 3, 4])))
 
 
 class ImageFileCreateView(LoginRequiredMixin, View):
@@ -119,14 +130,10 @@ class ImageFileActionView(LoginRequiredMixin, View):
         if not request.user.company.is_approved:
             return HttpResponseRedirect(reverse_lazy('landing:not_approved'))
         data = request.POST
-        file_id = data.get('file_id')
-        try:
-            file = File.objects.get(id=file_id)
-        except File.DoesNotExist:
-            return HttpResponseRedirect(reverse_lazy('landing:not_found'))
-        else:
-            if not file.user == request.user:
-                return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
+        file_id = data.get('file_id', None)
+        file = get_object_or_404(File, id=file_id)
+        if not file.has_permission:
+            return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
         action = data.get('action')
         if action == 'checkFile':
             context = check_file_async(file_id)
@@ -146,14 +153,23 @@ class ProductListView(LoginRequiredMixin, ListView):
     template_name = 'dashboard/imagefilter/product/list.html'
 
     def get_queryset(self):
-        return Product.objects.values('product_code', 'name', 'id', 'file_id', 'change').filter(file_id=self.kwargs['file_id']).\
+        file_id = self.kwargs.get('file_id', None)
+        file = get_object_or_404(File, id=file_id)
+        if not file.has_permission:
+            return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
+
+        return Product.objects.values('product_code', 'name', 'id', 'file_id', 'change').filter(file=file).\
             annotate(num_image=Count('image'), num_exclude=Count('image', filter=Q(image__type=3)))
 
 
 class ProductDetailView(LoginRequiredMixin, View):
     def get(self, request, file_id, product_id):
+        file = get_object_or_404(File, id=file_id)
+        if not file.has_permission:
+            return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
+
         try:
-            product = Product.objects.select_related('file').get(Q(id=product_id) & Q(file_id=file_id))
+            product = Product.objects.select_related('file').get(Q(id=product_id) & Q(file=file))
         except Product.DoesNotExist:
             return HttpResponseRedirect(reverse_lazy('landing:not_found'))
         else:
@@ -167,4 +183,8 @@ class ImageListView(LoginRequiredMixin, ListView):
     template_name = 'dashboard/imagefilter/image/list.html'
 
     def get_queryset(self):
-        return Image.objects.values('id', 'type', 'uri', 'product__product_code', 'product__name', 'product_id', 'product__file_id', 'error').filter(product__file_id=self.kwargs['file_id'])
+        file_id = self.kwargs.get('file_id', None)
+        file = get_object_or_404(File, id=file_id)
+        if not file.has_permission:
+            return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
+        return Image.objects.values('id', 'type', 'uri', 'product__product_code', 'product__name', 'product_id', 'product__file_id', 'error').filter(product__file=file)

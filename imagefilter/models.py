@@ -37,6 +37,16 @@ class File(models.Model):
     def __str__(self):
         return self.original.path.split('/')[-1]
 
+    @property
+    def has_permission(self, user):
+        if user.is_company_admin:
+            if self.user.company == user.company:
+                return True
+        else:
+            if self.user == user:
+                return True
+        return False
+
 
 class Product(models.Model):
     class Meta:
