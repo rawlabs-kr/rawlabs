@@ -187,5 +187,9 @@ class ImageListView(LoginRequiredMixin, ListView):
         file = get_object_or_404(File, id=file_id)
         if not file.has_permission:
             return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
+        status = self.request.GET.get('status', None)
+        filter = Q(product__file=file)
+        if status:
+            filter = filter.add(Q(status=status), Q.AND)
         return Image.objects.values('id', 'type', 'uri', 'product__product_code', 'product__name', 'product_id',
-                                    'product__file_id', 'error').filter(product__file=file)
+                                    'product__file_id', 'error').filter(filter)
