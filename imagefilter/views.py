@@ -132,7 +132,7 @@ class ImageFileActionView(LoginRequiredMixin, View):
         data = request.POST
         file_id = data.get('file_id', None)
         file = get_object_or_404(File, id=file_id)
-        if not file.has_permission:
+        if not file.has_permission(request.user):
             return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
         action = data.get('action')
         if action == 'checkFile':
@@ -155,7 +155,7 @@ class ProductListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         file_id = self.kwargs.get('file_id', None)
         file = get_object_or_404(File, id=file_id)
-        if not file.has_permission:
+        if not file.has_permission(self.request.user):
             return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
 
         return Product.objects.values('product_code', 'name', 'id', 'file_id', 'change').filter(file=file). \
@@ -165,7 +165,7 @@ class ProductListView(LoginRequiredMixin, ListView):
 class ProductDetailView(LoginRequiredMixin, View):
     def get(self, request, file_id, product_id):
         file = get_object_or_404(File, id=file_id)
-        if not file.has_permission:
+        if not file.has_permission(self.request.user):
             return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
 
         try:
@@ -185,7 +185,7 @@ class ImageListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         file_id = self.kwargs.get('file_id', None)
         file = get_object_or_404(File, id=file_id)
-        if not file.has_permission:
+        if not file.has_permission(self.request.user):
             return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
         status = self.request.GET.get('status', None)
         filter = Q(product__file=file)

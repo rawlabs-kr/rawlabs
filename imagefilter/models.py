@@ -37,7 +37,6 @@ class File(models.Model):
     def __str__(self):
         return self.original.path.split('/')[-1]
 
-    @property
     def has_permission(self, user):
         if user.is_company_admin:
             if self.user.company == user.company:
