@@ -107,7 +107,7 @@ class ProductDetailView(LoginRequiredMixin, View):
         except Product.DoesNotExist:
             return HttpResponseRedirect(reverse_lazy('landing:not_found'))
         else:
-            if not product.file.user == request.user:
+            if not product.has_permission(request.user):
                 return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
         return render(request, template_name='dashboard/imagefilter/product/detail.html', context={'product': product})
 

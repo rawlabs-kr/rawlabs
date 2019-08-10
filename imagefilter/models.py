@@ -66,6 +66,15 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+    def has_permission(self, user):
+        if user.is_company_admin:
+            if self.file.user.company == user.company:
+                return True
+        else:
+            if self.file.user == user:
+                return True
+        return False
+
 
 IMAGE_TYPE_CHOICES = ((0, '분류 전'), (1, '분류 실패'), (2, '분류중'), (3, '제외'), (4, '포함'),)
 
