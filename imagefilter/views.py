@@ -270,6 +270,22 @@ class ImageTable(tables.Table):
         elif record.type == 4:
             return '포함'
 
+    def error(self, record):
+        if record.type == 1:
+            if record.error and record.google_api_error_msg:
+                text = "{}[{}]".format(record.error, record.google_api_error_msg)
+            elif record.error:
+                text = "{}".format(record.error)
+            elif record.google_api_error_msg:
+                text = "{}".format(record.google_api_error_msg)
+            else:
+                text = ''
+            html = """<span class="text-warning font-weight-bold">분류실패({text})</span>""".format(text=text)
+            return mark_safe(html)
+        else:
+            return None
+
+
 
 class ImageTypeFilter(FilterSet):
     class Meta:
