@@ -13,7 +13,7 @@ from django.views.generic import TemplateView, ListView, CreateView
 from account.forms import CompanyViewForm, CompanyUpdateForm, CustomUserCreationForm
 from imagefilter.forms import FileCreateForm
 from imagefilter.models import File, Product, Image
-from imagefilter.views import check_file_async, filter_image_async, delete_file, generate_file
+from imagefilter.actions import check_file_async, filter_image_async, delete_file, generate_file
 
 User = get_user_model()
 

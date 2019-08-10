@@ -18,15 +18,19 @@
         </div>
 
         <div class="row justify-content-center">
-            <div class="col-12">
+            <div class="col-12 mb-3">
                 {% if filter %}
                     <form action="" method="get" class="form form-inline">
+                        <div class="form-group mr-3">
                         {% bootstrap_form filter.form layout='inline' %}
+                        </div>
                         {% buttons %}
                             <button class="btn btn-primary">선택</button>
                         {% endbuttons %}
                     </form>
                 {% endif %}
+            </div>
+            <div class="col-12">
                 {% render_table table %}
             </div>
         </div>
@@ -48,6 +52,7 @@
                 title: 'Toolbox'
             })
         });
+
         function changeType(image_id, type) {
             $.ajax({
                 type: "POST",
