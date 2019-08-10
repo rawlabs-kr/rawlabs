@@ -197,8 +197,7 @@ class ImageTable(tables.Table):
     action = tables.Column(accessor='id', verbose_name='변경')
 
     def render_uri(self, record):
-        html = """<button type="button" class="btn btn-primary btn-sm" data-toggle="popover" data-img="{uri}"
-        title="미리보기" onclick="window.open('{uri}', '_blank')">미리보기</button>""".format(
+        html = """<button type="button" class="btn btn-primary btn-sm" data-toggle="popover" data-img="{uri}" title="미리보기" onclick="window.open('{uri}', '_blank')">미리보기</button>""".format(
             uri=record.uri)
         return mark_safe(html)
 
