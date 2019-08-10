@@ -1,6 +1,6 @@
 from django import forms
 
-from imagefilter.models import File
+from imagefilter.models import File, Image
 
 
 class FileCreateForm(forms.ModelForm):

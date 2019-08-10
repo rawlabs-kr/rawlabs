@@ -48,5 +48,22 @@
                 title: 'Toolbox'
             })
         });
+        function changeType(image_id, type) {
+            $.ajax({
+                type: "POST",
+                url: '/dashboard/imagefilter/image/' + image_id + '/',
+                data: {'image_id': image_id, 'type': type, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                dataType: "json",
+                success: function (response) {
+                    if (response.result) {
+                        alert('성공');
+                        location.reload();
+                    } else {
+                        alert(response.message)
+                    }
+
+                }
+            })
+        }
     </script>
 {% endblock %}

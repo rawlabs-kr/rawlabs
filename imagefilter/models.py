@@ -24,7 +24,8 @@ class File(models.Model):
     title = models.CharField(max_length=100, null=False, blank=False, verbose_name='작업명')
     user = models.ForeignKey(User, null=False, blank=True, on_delete=models.PROTECT, verbose_name='사용자',
                              editable=False, db_index=True)
-    original = models.FileField(max_length=500, null=False, blank=False, verbose_name='원본파일', upload_to='imagefilter/file/%Y/%m/%d',
+    original = models.FileField(max_length=500, null=False, blank=False, verbose_name='원본파일',
+                                upload_to='imagefilter/file/%Y/%m/%d',
                                 validators=[FileExtensionValidator(allowed_extensions=['xlsx', 'xls'])])
     filtered = models.FileField(max_length=500, null=True, blank=True, verbose_name='필터링된 파일', editable=False)
     num_product = models.IntegerField(null=True, blank=True, verbose_name='상품 수')
@@ -65,6 +66,7 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+
 IMAGE_TYPE_CHOICES = ((0, '분류 전'), (1, '분류 실패'), (2, '분류중'), (3, '제외'), (4, '포함'),)
 
 
@@ -75,10 +77,20 @@ class Image(models.Model):
         ordering = ('-product', '-id',)
 
     filter_dt = models.DateTimeField(null=True, blank=True, verbose_name='분류일시', editable=False)
-    product = models.ForeignKey(Product, null=False, blank=False, verbose_name='상품', on_delete=models.PROTECT, db_index=True)
+    product = models.ForeignKey(Product, null=False, blank=False, verbose_name='상품', on_delete=models.PROTECT,
+                                db_index=True)
     uri = models.TextField(null=False, blank=False, verbose_name='이미지 uri')
     extracted_text = JSONField(null=True, blank=True, verbose_name='이미지 분석 결과')
     type = models.IntegerField(choices=IMAGE_TYPE_CHOICES, default=0, verbose_name='분류결과')
     error = models.TextField(null=True, blank=True, verbose_name='에러')
     google_api_error_code = models.IntegerField(null=True, blank=True, verbose_name='구글 에러 코드')
     google_api_error_msg = models.TextField(null=True, blank=True, verbose_name='구글 에러 메시지')
+
+    def has_permission(self, user):
+        if user.is_company_admin:
+            if self.product.file.user.company == user.company:
+                return True
+        else:
+            if self.product.file.user == user:
+                return True
+        return False

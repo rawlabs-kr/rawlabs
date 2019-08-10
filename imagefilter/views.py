@@ -136,7 +136,7 @@ class ImageFileActionView(LoginRequiredMixin, View):
             return HttpResponseRedirect(reverse_lazy('landing:not_approved'))
         data = request.POST
         file_id = data.get('file_id', None)
-        file = get_object_or_404(File, id=file_id)
+        file = get_object_or_404(File.objects.filter(), id=file_id)
         if not file.has_permission(request.user):
             return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
         action = data.get('action')
@@ -189,7 +189,7 @@ class ImageTable(tables.Table):
         template_name = 'dashboard/imagefilter/image/bootstrap4.html'
         attrs = {'class': 'table table-striped bg-white'}
         fields = ('product', 'uri', 'type', 'action')
-        sequence = ('product', 'uri', 'type', 'action')
+        sequence = ('product', 'type', 'uri', 'action')
 
     uri = tables.Column(verbose_name='이미지')
     type = tables.Column()
@@ -225,9 +225,19 @@ class ImageTable(tables.Table):
             text = """<span class="text-primary font-weight-bold">포함</span>"""
             return mark_safe(text)
 
-    def render_action(self, value):
-        text = """<button type="button" class="btn btn-primary btn-sm">포함</button>
-        <button type="button" class="btn btn-danger btn-sm">제외</button>"""
+    def render_action(self, record):
+        if record.type == 1:
+            text = """<button type="button" class="btn btn-primary btn-sm" onclick='changeType({id}, 4);'>포함처리</button>
+            <button type="button" class="btn btn-danger btn-sm" onclick='changeType({id}, 3);'>제외처리</button>""".format(id=record.id)
+        elif record.type == 3:
+            text = """<button type="button" class="btn btn-primary btn-sm" onclick='changeType({id}, 4);'>포함처리</button>
+            <button type="button" class="btn btn-danger btn-sm" disabled onclick='changeType({id}, 3);'>제외처리</button>""".format(id=record.id)
+        elif record.type == 4:
+            text = """<button type="button" class="btn btn-primary btn-sm" disabled onclick='changeType({id}, 4);'>포함처리</button>
+            <button type="button" class="btn btn-danger btn-sm" onclick='changeType({id}, 3);'>제외처리</button>""".format(id=record.id)
+        else:
+            text = """<button type="button" class="btn btn-primary btn-sm" disabled onclick='changeType({id}, 4);'>포함처리</button>
+            <button type="button" class="btn btn-danger btn-sm" disabled onclick='changeType({id}, 3);'>제외처리</button>""".format(id=record.id)
         return mark_safe(text)
 
 
@@ -252,5 +262,30 @@ class ImageListView(tables.views.SingleTableMixin, FilterView):
         filter = Q(product__file=file)
         return Image.objects.filter(filter)
 
-    def post(self, request):
-        pass
+
+class ImageTypeChangeView(View):
+    def post(self, request, image_id):
+        image = get_object_or_404(Image, Q(id=image_id))
+
+        if image.type in [0, 2]:
+            context = {'result': False, 'message': '분류 전, 분류중 파일은 변경할 수 없습니다.'}
+            return HttpResponse(json.dumps(context), content_type='application/json')
+
+        if not image.has_permission(request.user):
+            context = {'result': False, 'message': '권한이 없습니다.'}
+            return HttpResponse(json.dumps(context), content_type='application/json')
+
+        type = int(request.POST.get('type', None))
+        if type not in [3, 4]:
+            context = {'result': False, 'message': '잘못된 타입.'}
+            return HttpResponse(json.dumps(context), content_type='application/json')
+        else:
+            image.type = type
+            image.save()
+            context = {'result': True, 'message': '성공.'}
+            return HttpResponse(json.dumps(context), content_type='application/json')
+
+
+
+
+
