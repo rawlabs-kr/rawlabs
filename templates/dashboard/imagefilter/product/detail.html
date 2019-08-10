@@ -18,11 +18,13 @@
 
         <div class="row">
             <div class="col-6">
+                <h6 class="mt-4 mb-4">이미지 분류 전</h6>
                 {% autoescape off %}
                 {{ product.original_description }}
                 {% endautoescape %}
             </div>
             <div class="col-6">
+                <h6 class="mt-4 mb-4">이미지 분류 후</h6>
                 {% autoescape off %}
                 {{ product.filtered_description }}
                 {% endautoescape %}
