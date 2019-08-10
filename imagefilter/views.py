@@ -8,8 +8,13 @@ from django.db.models import Count, Q
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
+from django.utils.safestring import mark_safe
 from django.views import View
 from django.views.generic import ListView
+
+import django_tables2 as tables
+from django_filters import FilterSet
+from django_filters.views import FilterView
 
 from account.models import Company
 from imagefilter.forms import FileCreateForm
@@ -178,28 +183,103 @@ class ProductDetailView(LoginRequiredMixin, View):
         return render(request, template_name='dashboard/imagefilter/product/detail.html', context={'product': product})
 
 
-class ImageListView(LoginRequiredMixin, ListView):
-    paginate_by = 30
+class ImagePreviewButtonColumn(tables.Column):
+    def render(self, value):
+        html = """<button type="button" class="btn btn-primary btn-sm" data-toggle="popover" data-img="{uri}" title="미리보기" onclick="window.open('{uri}', '_blank')">미리보기</button>""".format(
+            uri=value)
+        return mark_safe(html)
+
+    def header(self):
+        return '이미지'
+
+
+class ImageStatusColumn(tables.Column):
+    def render(self, value):
+        if value == 0:
+            return '분류 전'
+        elif value == 1:
+            return '분류 실패'
+        elif value == 2:
+            return '분류 중'
+        elif value == 3:
+            return '제외'
+        elif value == 4:
+            return '포함'
+
+    def header(self):
+        return '분류결과'
+
+
+class ImageProductNameColumn(tables.Column):
+    def render(self, value):
+        return value
+
+    def header(self):
+        return '상품'
+
+
+class ImageProductCodeColumn(tables.Column):
+    def render(self, value):
+        return value
+
+    def header(self):
+        return '상품코드'
+
+
+class ImageProductColumn(tables.Column):
+    def render(self, value):
+        html = """<a href="">[{code}] {name}""".format(code=value.product_code, name=value.name)
+        return mark_safe(html)
+
+
+class ImageTable(tables.Table):
+    class Meta:
+        model = Image
+        template_name = 'dashboard/imagefilter/image/bootstrap4.html'
+        attrs = {'class': 'table table-striped bg-white'}
+        fields = ('product', 'uri', 'type', 'error')
+        sequence = ('product', 'uri', 'type', 'error')
+
+    uri = tables.Column(verbose_name='이미지')
+    type = ImageStatusColumn()
+    product = tables.Column()
+
+    def render_uri(self, record):
+        html = """<button type="button" class="btn btn-primary btn-sm" data-toggle="popover" data-img="{uri}" title="미리보기" onclick="window.open('{uri}', '_blank')">미리보기</button>""".format(
+            uri=record)
+        return mark_safe(html)
+
+    def render_product(self, record):
+        html = """<a href="{url}">[{code}] {name}</a>""".format(url=reverse_lazy('dashboard:imagefilter:product_detail',
+                                                                                 kwargs={
+                                                                                     'file_id': record.product.file.id,
+                                                                                     'product_id': record.product.id}),
+                                                                code=record.product.product_code,
+                                                                name=record.product.name)
+        return mark_safe(html)
+
+    def render_type(self, record):
+        if record.type == 0:
+            return '분류 전'
+        elif record.type == 1:
+            return '분류 실패'
+        elif record.type == 2:
+            return '분류 중'
+        elif record.type == 3:
+            return '제외'
+        elif record.type == 4:
+            return '포함'
+
+
+class ImageTypeFilter(FilterSet):
+    class Meta:
+        model = Image
+        fields = ['type']
+
+
+class ImageListView(tables.views.SingleTableMixin, FilterView):
+    table_class = ImageTable
+    model = Image
     template_name = 'dashboard/imagefilter/image/list.html'
 
-    def get_queryset(self):
-        file_id = self.kwargs.get('file_id', None)
-        file = get_object_or_404(File, id=file_id)
-        if not file.has_permission(self.request.user):
-            return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
-        status = self.request.GET.get('status', None)
-        filter = Q(product__file=file)
-        if status:
-            filter = filter.add(Q(status=status), Q.AND)
-        queryset = Image.objects.values('id', 'type', 'uri', 'product__product_code', 'product__name', 'product_id',
-                                    'product__file_id', 'error').filter(filter)
-
-        self.file = file
-        self.image_count = queryset.count
-        return queryset
-
-    def get_context_data(self, *args, **kwargs):
-        context = super(ImageListView, self).get_context_data(*args, **kwargs)
-        context['file'] = self.file
-        context['image_count'] = self.image_count
-        return context
+    filterset_class = ImageTypeFilter

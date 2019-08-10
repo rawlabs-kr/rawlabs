@@ -19,40 +19,18 @@
 
         <div class="row justify-content-center">
             <div class="col-12">
-                <table class="table">
-                    <thead class="thead-dark">
-                    <tr>
-                        <th width="10%">고객사 상품코드</th>
-                        <th width="50%">상품명</th>
-                        <th width="10%">이미지</th>
-                        <th width="30%">분류결과</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for image in object_list %}
-                        <tr id="_image_id-{{ image.id }}">
-                            <td width="10%">{{ image.product__product_code }}</td>
-                            <td><a href="{% url 'dashboard:imagefilter:product_detail' file_id=image.product__file_id product_id=image.product_id %}">{{ image.product__name }}</a></td>
-                        <td><button type="button" class="btn btn-primary btn-sm" data-toggle="popover" data-img="{{ image.uri }}" title="미리보기" onclick="window.open('{{ image.uri }}', '_blank')">미리보기</button> </td>
-{#                            <td>{{ image.uri }}</td>#}
-                            <td>
-                                {% if image.type == 0 %}분류전
-                                {% elif image.type == 1 %}
-                                    <span class="text-warning font-weight-bold">분류실패({{ image.error }})</span>
-                                {% elif image.type == 2 %}분류중
-                                {% elif image.type == 3 %}
-                                    <span class="text-danger font-weight-bold">제외</span>
-                                {% elif image.type == 4 %}포함{% else %}
-                                {{ image.type|default_if_none:"-" }}{% endif %}</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                {% if filter %}
+                    <form action="" method="get" class="form form-inline">
+                        {% bootstrap_form filter.form layout='inline' %}
+                        {% buttons %}
+                            <button class="btn btn-primary">선택</button>
+                        {% endbuttons %}
+                    </form>
+                {% endif %}
+                {% render_table table %}
             </div>
         </div>
-
         <div class="row justify-content-center">
-            {% bootstrap_pagination page=page_obj %}
         </div>
     </div>
 {% endblock %}

@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bootstrap4',
+    'django_filters',
     'django_tables2',
     'mathfilters',
     'django.contrib.humanize',
