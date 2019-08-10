@@ -183,70 +183,23 @@ class ProductDetailView(LoginRequiredMixin, View):
         return render(request, template_name='dashboard/imagefilter/product/detail.html', context={'product': product})
 
 
-class ImagePreviewButtonColumn(tables.Column):
-    def render(self, value):
-        html = """<button type="button" class="btn btn-primary btn-sm" data-toggle="popover" data-img="{uri}" title="미리보기" onclick="window.open('{uri}', '_blank')">미리보기</button>""".format(
-            uri=value)
-        return mark_safe(html)
-
-    def header(self):
-        return '이미지'
-
-
-class ImageStatusColumn(tables.Column):
-    def render(self, value):
-        if value == 0:
-            return '분류 전'
-        elif value == 1:
-            return '분류 실패'
-        elif value == 2:
-            return '분류 중'
-        elif value == 3:
-            return '제외'
-        elif value == 4:
-            return '포함'
-
-    def header(self):
-        return '분류결과'
-
-
-class ImageProductNameColumn(tables.Column):
-    def render(self, value):
-        return value
-
-    def header(self):
-        return '상품'
-
-
-class ImageProductCodeColumn(tables.Column):
-    def render(self, value):
-        return value
-
-    def header(self):
-        return '상품코드'
-
-
-class ImageProductColumn(tables.Column):
-    def render(self, value):
-        html = """<a href="">[{code}] {name}""".format(code=value.product_code, name=value.name)
-        return mark_safe(html)
-
-
 class ImageTable(tables.Table):
     class Meta:
         model = Image
         template_name = 'dashboard/imagefilter/image/bootstrap4.html'
         attrs = {'class': 'table table-striped bg-white'}
-        fields = ('product', 'uri', 'type', 'error')
-        sequence = ('product', 'uri', 'type', 'error')
+        fields = ('product', 'uri', 'type', 'action')
+        sequence = ('product', 'uri', 'type', 'action')
 
     uri = tables.Column(verbose_name='이미지')
-    type = ImageStatusColumn()
+    type = tables.Column()
     product = tables.Column()
+    action = tables.Column(accessor='id', verbose_name='변경')
 
     def render_uri(self, record):
-        html = """<button type="button" class="btn btn-primary btn-sm" data-toggle="popover" data-img="{uri}" title="미리보기" onclick="window.open('{uri}', '_blank')">미리보기</button>""".format(
-            uri=record)
+        html = """<button type="button" class="btn btn-primary btn-sm" data-toggle="popover" data-img="{uri}"
+        title="미리보기" onclick="window.open('{uri}', '_blank')">미리보기</button>""".format(
+            uri=record.uri)
         return mark_safe(html)
 
     def render_product(self, record):
@@ -262,29 +215,21 @@ class ImageTable(tables.Table):
         if record.type == 0:
             return '분류 전'
         elif record.type == 1:
-            return '분류 실패'
+            text = """<span class="text-warning font-weight-bold">분류실패</span>"""
+            return mark_safe(text)
         elif record.type == 2:
             return '분류 중'
         elif record.type == 3:
-            return '제외'
+            text = """<span class="text-danger font-weight-bold">제외</span>"""
+            return mark_safe(text)
         elif record.type == 4:
-            return '포함'
+            text = """<span class="text-primary font-weight-bold">포함</span>"""
+            return mark_safe(text)
 
-    def error(self, record):
-        if record.type == 1:
-            if record.error and record.google_api_error_msg:
-                text = "{}[{}]".format(record.error, record.google_api_error_msg)
-            elif record.error:
-                text = "{}".format(record.error)
-            elif record.google_api_error_msg:
-                text = "{}".format(record.google_api_error_msg)
-            else:
-                text = ''
-            html = """<span class="text-warning font-weight-bold">분류실패({text})</span>""".format(text=text)
-            return mark_safe(html)
-        else:
-            return None
-
+    def render_action(self, value):
+        text = """<button type="button" class="btn btn-primary btn-sm">포함</button>
+        <button type="button" class="btn btn-danger btn-sm">제외</button>"""
+        return mark_safe(text)
 
 
 class ImageTypeFilter(FilterSet):
@@ -299,3 +244,14 @@ class ImageListView(tables.views.SingleTableMixin, FilterView):
     template_name = 'dashboard/imagefilter/image/list.html'
 
     filterset_class = ImageTypeFilter
+
+    def get_queryset(self):
+        file_id = self.kwargs.get('file_id', None)
+        file = get_object_or_404(File, id=file_id)
+        if not file.has_permission(self.request.user):
+            return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
+        filter = Q(product__file=file)
+        return Image.objects.filter(filter)
+
+    def post(self, request):
+        pass
