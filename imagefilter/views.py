@@ -119,11 +119,14 @@ class ImageTable(tables.Table):
         attrs = {'class': 'table table-striped bg-white'}
         fields = ('product', 'uri', 'type', 'action')
         sequence = ('product', 'type', 'uri', 'action')
+        # fields = ('selections', 'product', 'uri', 'type', 'action')
+        # sequence = ('selections', 'product', 'type', 'uri', 'action')
 
     uri = tables.Column(verbose_name='이미지')
     type = tables.Column()
     product = tables.Column()
     action = tables.Column(accessor='id', verbose_name='변경')
+    # selections = tables.CheckBoxColumn(accessor='id', attrs = {"th__input": {"onclick": "toggle(this)"}}, orderable=False)
 
     def render_uri(self, record):
         html = """<button type="button" class="btn btn-primary btn-sm" data-toggle="popover" data-img="{uri}" title="미리보기" onclick="window.open('{uri}', '_blank')">미리보기</button>""".format(

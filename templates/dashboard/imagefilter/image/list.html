@@ -22,7 +22,7 @@
                 {% if filter %}
                     <form action="" method="get" class="form form-inline">
                         <div class="form-group mr-3">
-                        {% bootstrap_form filter.form layout='inline' %}
+                            {% bootstrap_form filter.form layout='inline' %}
                         </div>
                         {% buttons %}
                             <button class="btn btn-primary">선택</button>
@@ -69,6 +69,21 @@
 
                 }
             })
+        }
+
+        function toggle(check_all) {
+            checkboxes = document.getElementsByName('selections');
+            function turnTrue(value, index, array) {
+                value.checked = true;
+            }
+            function turnFalse(value, index, array) {
+                value.checked = false;
+            }
+            if (check_all.checked) {
+                checkboxes.forEach(turnTrue)
+            } else {
+                checkboxes.forEach(turnFalse)
+            }
         }
     </script>
 {% endblock %}
