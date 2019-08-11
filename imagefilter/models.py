@@ -103,3 +103,13 @@ class Image(models.Model):
             if self.product.file.user == user:
                 return True
         return False
+
+    def error_str(self):
+        if self.error and self.google_api_error_msg:
+            return "[{}] {}".format(self.error, self.google_api_error_msg)
+        elif self.error:
+            return self.error
+        elif self.google_api_error_msg:
+            return self.google_api_error_msg
+        else:
+            return '분류실패'

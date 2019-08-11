@@ -129,7 +129,7 @@ class ImageTable(tables.Table):
     # selections = tables.CheckBoxColumn(accessor='id', attrs = {"th__input": {"onclick": "toggle(this)"}}, orderable=False)
 
     def render_uri(self, record):
-        html = """<button type="button" class="btn btn-primary btn-sm" data-toggle="popover" data-img="{uri}" title="미리보기" onclick="window.open('{uri}', '_blank')">미리보기</button>""".format(
+        html = """<button type="button" class="btn btn-primary btn-sm" data-toggle="popoverImage" data-img="{uri}" title="미리보기" onclick="window.open('{uri}', '_blank')">미리보기</button>""".format(
             uri=record.uri)
         return mark_safe(html)
 
@@ -146,7 +146,7 @@ class ImageTable(tables.Table):
         if record.type == 0:
             return '분류 전'
         elif record.type == 1:
-            text = """<span class="text-warning font-weight-bold">분류실패</span>"""
+            text = """<span class="text-warning font-weight-bold" data-toggle="popoverError" data-error="{error}">분류실패</span>""".format(error=record.error_str())
             return mark_safe(text)
         elif record.type == 2:
             return '분류 중'

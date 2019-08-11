@@ -42,7 +42,7 @@
 {% block extrascript %}
     <script type="text/javascript">
         $(document).ready(function () {
-            $('[data-toggle="popover"]').popover({
+            $('[data-toggle="popoverImage"]').popover({
                 //trigger: 'focus',
                 trigger: 'hover',
                 html: true,
@@ -50,7 +50,16 @@
                     return '<img class="img-fluid" src="' + $(this).data('img') + '" />';
                 },
                 title: 'Toolbox'
-            })
+            });
+            $('[data-toggle="popoverError"]').popover({
+                //trigger: 'focus',
+                trigger: 'hover',
+                html: true,
+                content: function () {
+                    return "<span>" + $(this).data('error') + "</span>";
+                },
+                title: 'Toolbox'
+            });
         });
 
         function changeType(image_id, type) {
