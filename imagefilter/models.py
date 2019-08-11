@@ -106,10 +106,10 @@ class Image(models.Model):
 
     def error_str(self):
         if self.error and self.google_api_error_msg:
-            return "[{}] {}".format(self.error, self.google_api_error_msg)
+            return "[시스템 에러] {}, [구글에러] {}".format(self.error, self.google_api_error_msg)
         elif self.error:
-            return self.error
+            return "[시스템 에러] {}".format(self.error)
         elif self.google_api_error_msg:
-            return self.google_api_error_msg
+            return "[구글 에러] {}".format(self.google_api_error_msg)
         else:
             return '분류실패'
