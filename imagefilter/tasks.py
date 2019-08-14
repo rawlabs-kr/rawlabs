@@ -128,9 +128,9 @@ def filter_image_callback(image_id, excluded_locales, data_dict, error):
             _image_instance.error = '관리자 문의'
     _image_instance.filter_dt = timezone.now()
     _image_instance.save()
-    all_image = list(set(Image.objects.values_list('type', flat=True).filter(product=_image_instance.product)))
+    all_image = list(set(Image.objects.values_list('type', flat=True).filter(product__file=_image_instance.product.file)))
 
-    if all_image.count(2) == 0:
+    if all_image.count(2) == 0 and all_image.count(0) == 0:
         file = _image_instance.product.file
         file.status = 5
         file.save()
