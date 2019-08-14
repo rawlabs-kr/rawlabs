@@ -13,6 +13,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
+from google.cloud.vision_v1.proto.image_annotator_pb2 import AnnotateImageRequest
 
 from imagefilter import exceptions
 from imagefilter.models import Image, Product, File
@@ -27,6 +28,7 @@ from google.protobuf.json_format import MessageToDict
 def add(x, y):
     sleep(10)
     return x + y
+
 
 @app.task
 def create_product_and_image(file_id):
@@ -58,85 +60,80 @@ def create_product_and_image(file_id):
                 file.save()
 
 
+def chunker(seq, size):
+    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+
+
 @app.task
 def filter_image(file_id, excluded_locales):
     from imagefilter.models import Image
     from imagefilter.models import File
-    file = File.objects.get(id=file_id)
-    image_list = list(Image.objects.values_list('id', flat=True).filter(Q(product__file_id=file_id) & Q(type=0)))
-    image_result = []
+    image_list = list(Image.objects.values('id', 'uri').filter(Q(product__file_id=file_id) & Q(type=0)))
+    image_chunk = chunker(image_list, 5)
     with open(settings.GOOGLE_VISION_API_CREDENTIAL_PATH, 'r') as json_credential:
         google_credential_info = json.loads(json_credential.read())
 
-    for image_id in image_list:
-        result = filter_single_image.delay(image_id, excluded_locales, google_credential_info=google_credential_info)
-        image_result.append(result)
+    credentials = service_account.Credentials.from_service_account_info(google_credential_info)
+    client = vision_v1.ImageAnnotatorClient(credentials=credentials)
+    features = [vision_v1.types.Feature(type=vision_v1.enums.Feature.Type.TEXT_DETECTION)]
+    for chunk in image_chunk:
+        requests = []
+        for image_instance in chunk:
+            # result = filter_single_image.delay(image_id, excluded_locales, google_client=client)
+            uri = image_instance.get('uri')
+            image = vision_v1.types.Image()
+            image.source.image_uri = uri
+            image_request = vision_v1.types.AnnotateImageRequest(image=image, features=features)
+            requests.append(image_request)
 
-    is_finish = False
-    while is_finish is False:
-        image_result = [i for i in image_result if i.state not in ['FAILURE', 'SUCCESS']]
-        if len(image_result) == 0:
-            file.status = 5
-            file.save()
-            is_finish = True
-        else:
-            time.sleep(5)
-            continue
+            response = client.batch_annotate_images(requests)
+
+            for idx, annotate_response in enumerate(response.responses):
+                image_id = chunk[idx]['id']
+                try:
+                    data_dict = MessageToDict(annotate_response)
+                    error = None
+                except Exception as e:
+                    data_dict = None
+                    error = e
+                filter_image_callback.delay(image_id, excluded_locales, data_dict, error)
 
 
 @app.task
-def filter_single_image(image_id, excluded_locales, google_credential_info):
-    try:
-        image_instance = Image.objects.get(id=image_id)
-    except Image.DoesNotExist:
-        pass
+def filter_image_callback(image_id, excluded_locales, data_dict, error):
+    _image_instance = Image.objects.select_related('product', 'product__file').get(id=image_id)
+    if data_dict == None:
+        _image_instance.type = 2
+        _image_instance.error = str(error)
     else:
-        image_instance.type = 2
-        image_instance.save()
-        uri = image_instance.uri
-        try:
-            credentials = service_account.Credentials.from_service_account_info(google_credential_info)
-            client = vision_v1.ImageAnnotatorClient(credentials=credentials)
-            image = vision_v1.types.Image()
-            image.source.image_uri = uri
-            response = client.document_text_detection(image=image)
-            data_dict = MessageToDict(response)
-        except Exception as e:
-            image_instance.type = 1  # 분류 실패
-            image_instance.error = str(e)
-            print(e)
-        else:
-            image_instance.extracted_text = data_dict
-            image_instance.save()
-            text_annotations = data_dict.get('textAnnotations', None)
-            error = data_dict.get('error', None)
-            if text_annotations:
-                locale = text_annotations[0]['locale']
-                if locale in [excluded_locales] if isinstance(excluded_locales, str) else excluded_locales:
-                    image_instance.type = 3
-                else:
-                    image_instance.type = 4
-            elif error:
-                error = error
-                image_instance.type = 1
-                image_instance.error = error['message']
-                google_err_code = error['code']
-                google_err_message = error['message']
-                image_instance.google_api_error_code = google_err_code
-                if google_err_code == 3:
-                    image_instance.google_api_error_msg = '존재하지 않는 url'
-                else:
-                    image_instance.google_api_error_msg = google_err_message
-            elif data_dict == {}:
-                # vision api가 빈 dictionary를 반환하면 글자가 없다고 판단한 것
-                image_instance.type = 4
+        _image_instance.extracted_text = data_dict
+        _image_instance.save()
+        text_annotations = data_dict.get('textAnnotations', None)
+        error = data_dict.get('error', None)
+        if text_annotations:  # 텍스트 인식 성공
+            locale = text_annotations[0]['locale']
+            if locale in [excluded_locales] if isinstance(excluded_locales, str) else excluded_locales:
+                _image_instance.type = 3
             else:
-                image_instance.type = 1
-                image_instance.error = '관리자 문의'
-        finally:
-            image_instance.filter_dt = timezone.now()
-            image_instance.save()
+                _image_instance.type = 4
+        elif error:
+            error = error
+            _image_instance.type = 1
+            _image_instance.error = error['message']
+        elif data_dict == {}:
+            # vision api가 빈 dictionary를 반환하면 글자가 없다고 판단한 것
+            _image_instance.type = 4
+        else:
+            _image_instance.type = 1
+            _image_instance.error = '관리자 문의'
+    _image_instance.filter_dt = timezone.now()
+    _image_instance.save()
+    all_image = list(set(Image.objects.values_list('type', flat=True).filter(product=_image_instance.product)))
 
+    if all_image.count(2) == 0:
+        file = _image_instance.product.file
+        file.status = 5
+        file.save()
 
 def excel_to_dict(path, full=False, dict=True):
     if full:
@@ -255,9 +252,11 @@ def generate_product_description(file_id):
                          '무게': np.str}
             data_list = pd.read_excel(file.original.path, dtype=type_dict)
             # data_list = excel_to_dict(file.original.path, full=True, dict=False)
-            new_product_list = Product.objects.values('product_code', 'filtered_description').filter(Q(file_id=file_id) & Q(change=True))
+            new_product_list = Product.objects.values('product_code', 'filtered_description').filter(
+                Q(file_id=file_id) & Q(change=True))
             for new_product in new_product_list:
-                data_list.loc[data_list['고객사상품코드'] == int(new_product['product_code']), '상품상세설명'] = new_product['filtered_description']
+                data_list.loc[data_list['고객사상품코드'] == int(new_product['product_code']), '상품상세설명'] = new_product[
+                    'filtered_description']
             new_file_name = file.original.path.split('.xlsx')[0] + '_filtered.xls'
             data_list.to_excel(new_file_name, index=False, columns=list(type_dict.keys()))
 
@@ -269,7 +268,3 @@ def generate_product_description(file_id):
         else:
             time.sleep(5)
             continue
-
-
-
-
