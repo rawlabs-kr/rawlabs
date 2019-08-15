@@ -66,6 +66,15 @@ class Product(models.Model):
     change = models.NullBooleanField(default=None, verbose_name='필터링 후 변동')
     status = models.IntegerField(choices=STATUS_CHOICES, null=False, blank=False, verbose_name='필터링 후 변동')
 
+    def set_status(self):
+        if self.change is True:
+            self.status = 1
+        elif self.change is False:
+            self.status = 2
+        else:
+            self.status = 0
+        self.save()
+
     def __str__(self):
         return self.name
 
