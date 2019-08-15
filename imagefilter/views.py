@@ -110,7 +110,8 @@ class ProductTable(tables.Table):
     def render_change(self, record):
         change = record['change']
         if change is True:
-            return '변경 있음'
+            html = """<span class="text-danger font-weight-bold">변경 있음</span>"""
+            return mark_safe(html)
         elif change is False:
             return '변경 없음'
         else:
