@@ -63,17 +63,7 @@ class Product(models.Model):
     name = models.CharField(max_length=500, db_index=True, verbose_name='상품명', editable=False)
     original_description = models.TextField(null=True, blank=True, verbose_name='원본 상세설명')
     filtered_description = models.TextField(null=True, blank=True, verbose_name='필터링후 상세설명')
-    change = models.NullBooleanField(default=None, verbose_name='필터링 후 변동')
     status = models.IntegerField(choices=STATUS_CHOICES, null=False, blank=False, verbose_name='필터링 후 변동')
-
-    def set_status(self):
-        if self.change is True:
-            self.status = 1
-        elif self.change is False:
-            self.status = 2
-        else:
-            self.status = 0
-        self.save()
 
     def __str__(self):
         return self.name

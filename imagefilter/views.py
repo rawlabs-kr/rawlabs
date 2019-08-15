@@ -87,8 +87,8 @@ class ProductTable(tables.Table):
         model = Product
         template_name = 'dashboard/imagefilter/image/bootstrap4.html'
         attrs = {'class': 'table table-striped bg-white'}
-        fields = ('product_code', 'name', 'num_image', 'num_exclude', 'change')
-        sequence = ('product_code', 'name', 'num_image', 'num_exclude', 'change')
+        fields = ('product_code', 'name', 'num_image', 'num_exclude', 'status')
+        sequence = ('product_code', 'name', 'num_image', 'num_exclude', 'status')
 
     num_image = tables.Column(verbose_name='이미지')
     num_exclude = tables.Column(verbose_name='제외된 이미지')
@@ -107,21 +107,21 @@ class ProductTable(tables.Table):
                                                      name=record['name'])
         return mark_safe(html)
 
-    def render_change(self, record):
-        change = record['change']
-        if change is True:
+    def render_status(self, record):
+        status = record['status']
+        if status == 1:
             html = """<span class="text-danger font-weight-bold">변경 있음</span>"""
             return mark_safe(html)
-        elif change is False:
+        elif status == 2:
             return '변경 없음'
         else:
             return '변경 전'
 
 
-class ProductChangeFilter(FilterSet):
+class ProductStatusFilter(FilterSet):
     class Meta:
         model = Product
-        fields = ['change']
+        fields = ['status']
 
 
 class ProductListView(LoginRequiredMixin, tables.views.SingleTableMixin, FilterView):
