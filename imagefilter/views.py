@@ -129,7 +129,7 @@ class ProductListView(LoginRequiredMixin, tables.views.SingleTableMixin, FilterV
     model = Product
     template_name = 'dashboard/imagefilter/product/list.html'
 
-    filterset_class = ProductChangeFilter
+    filterset_class = ProductStatusFilter
 
     def get_queryset(self):
         file_id = self.kwargs.get('file_id', None)
@@ -137,7 +137,7 @@ class ProductListView(LoginRequiredMixin, tables.views.SingleTableMixin, FilterV
         if not file.has_permission(self.request.user):
             return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
 
-        return Product.objects.values('product_code', 'name', 'id', 'file_id', 'change').filter(file=file). \
+        return Product.objects.values('product_code', 'name', 'id', 'file_id', 'status').filter(file=file). \
             annotate(num_image=Count('image'), num_exclude=Count('image', filter=Q(image__type=3)))
 
 
