@@ -92,7 +92,7 @@ class ProductTable(tables.Table):
 
     num_image = tables.Column(verbose_name='이미지')
     num_exclude = tables.Column(verbose_name='제외된 이미지')
-    image = tables.Column(verbose_name='이미지 보기')
+    image = tables.Column(accessor='id', verbose_name='이미지 보기')
 
     def render_product_code(self, record):
         html = """<a href={url}>{code}</a>""".format(url=reverse_lazy('dashboard:imagefilter:product_detail',
@@ -119,7 +119,7 @@ class ProductTable(tables.Table):
             return '변경 전'
 
     def render_image(self, record):
-        html = """<a href={url}?product={product_id} class="btn btn-primary btn-sm>이미지보기</a>""".format(url=reverse_lazy('dashboard:imagefilter:image_list', kwargs={'file_id': record['file_id']}), product_id=record['id'])
+        html = """<a href="{url}?product={product_id}" class="btn btn-primary btn-sm">이미지보기</a>""".format(url=reverse_lazy('dashboard:imagefilter:image_list', kwargs={'file_id': record['file_id']}), product_id=record['id'])
         return mark_safe(html)
 
 
