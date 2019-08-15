@@ -118,10 +118,18 @@ class ProductTable(tables.Table):
             return '변경 전'
 
 
-class ProductListView(LoginRequiredMixin, tables.views.SingleTableMixin, ListView):
+class ProductChangeFilter(FilterSet):
+    class Meta:
+        model = Product
+        fields = ['change']
+
+
+class ProductListView(LoginRequiredMixin, tables.views.SingleTableMixin, FilterView):
     table_class = ProductTable
     model = Product
     template_name = 'dashboard/imagefilter/product/list.html'
+
+    filterset_class = ProductChangeFilter
 
     def get_queryset(self):
         file_id = self.kwargs.get('file_id', None)

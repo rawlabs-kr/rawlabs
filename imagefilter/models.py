@@ -55,6 +55,8 @@ class Product(models.Model):
         unique_together = (('file', 'product_code'),)
         ordering = ('-id',)
 
+    STATUS_CHOICES = ((0, '분류 전'), (1, '변동 있음'), (2, '변동 없음'))
+
     file = models.ForeignKey(File, null=False, blank=False, verbose_name='파일', on_delete=models.PROTECT,
                              editable=False, db_index=True)
     product_code = models.CharField(max_length=500, db_index=True, verbose_name='고객사코드', editable=False)
@@ -62,6 +64,7 @@ class Product(models.Model):
     original_description = models.TextField(null=True, blank=True, verbose_name='원본 상세설명')
     filtered_description = models.TextField(null=True, blank=True, verbose_name='필터링후 상세설명')
     change = models.NullBooleanField(default=None, verbose_name='필터링 후 변동')
+    status = models.IntegerField(choices=STATUS_CHOICES, null=False, blank=False, verbose_name='필터링 후 변동')
 
     def __str__(self):
         return self.name
