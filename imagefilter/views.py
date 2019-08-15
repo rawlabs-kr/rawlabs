@@ -107,14 +107,14 @@ class ProductTable(tables.Table):
                                                      name=record['name'])
         return mark_safe(html)
 
-    # def render_change(self, record):
-    #     change = record['change']
-    #     if change is True:
-    #         return '변경 있음'
-    #     elif change is False:
-    #         return '변경 없음'
-    #     else:
-    #         return '변경 전'
+    def render_change(self, record):
+        change = record['change']
+        if change is True:
+            return '변경 있음'
+        elif change is False:
+            return '변경 없음'
+        else:
+            return '변경 전'
 
 
 class ProductListView(LoginRequiredMixin, tables.views.SingleTableMixin, ListView):
