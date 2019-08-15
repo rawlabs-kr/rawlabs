@@ -87,11 +87,12 @@ class ProductTable(tables.Table):
         model = Product
         template_name = 'dashboard/imagefilter/image/bootstrap4.html'
         attrs = {'class': 'table table-striped bg-white'}
-        fields = ('product_code', 'name', 'num_image', 'num_exclude', 'status')
-        sequence = ('product_code', 'name', 'num_image', 'num_exclude', 'status')
+        fields = ('product_code', 'name', 'num_image', 'num_exclude', 'status', 'image')
+        sequence = ('product_code', 'name', 'num_image', 'num_exclude', 'status', 'image')
 
     num_image = tables.Column(verbose_name='이미지')
     num_exclude = tables.Column(verbose_name='제외된 이미지')
+    image = tables.Column(verbose_name='이미지 보기')
 
     def render_product_code(self, record):
         html = """<a href={url}>{code}</a>""".format(url=reverse_lazy('dashboard:imagefilter:product_detail',
@@ -116,6 +117,10 @@ class ProductTable(tables.Table):
             return '변경 없음'
         else:
             return '변경 전'
+
+    def render_image(self, record):
+        html = """<a href={url}?product={product_id} class="btn btn-primary btn-sm>이미지보기</a>""".format(url=reverse_lazy('dashboard:imagefilter:image_list', kwargs={'file_id': record['file_id']}), product_id=record['id'])
+        return mark_safe(html)
 
 
 class ProductStatusFilter(FilterSet):
@@ -250,11 +255,15 @@ class ImageListView(LoginRequiredMixin, tables.views.SingleTableMixin, FilterVie
     filterset_class = ImageTypeFilter
 
     def get_queryset(self):
+        product = self.request.GET.get('product', None)
+
         file_id = self.kwargs.get('file_id', None)
         file = get_object_or_404(File, id=file_id)
         if not file.has_permission(self.request.user):
             return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
         filter = Q(product__file=file)
+        if product:
+            filter.add(Q(product_id=int(product)), Q.AND)
         return Image.objects.filter(filter)
 
 
