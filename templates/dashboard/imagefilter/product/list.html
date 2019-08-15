@@ -1,4 +1,5 @@
 {% extends 'dashboard/base.html' %}
+{% load render_table from django_tables2 %}
 {% load humanize %}
 {% load bootstrap4 %}
 {% block content %}
@@ -17,34 +18,48 @@
         </div>
 
         <div class="row justify-content-center">
+            <div class="col-12 ㅡㅠ-3">
+                {% if filter %}
+                    <form action="" method="get" class="form form-inline">
+                        <div class="form-group mr-3">
+                            {% bootstrap_form filter.form layout='inline' %}
+                        </div>
+                        {% buttons %}
+                            <button class="btn btn-primary">선택</button>
+                        {% endbuttons %}
+                    </form>
+                {% endif %}
+            </div>
             <div class="col-12">
-                <table class="table">
-                    <thead class="thead-dark">
-                    <tr>
-                        <th>고객사 상품코드</th>
-                        <th>상품명</th>
-                        <th>이미지수</th>
-                        <th>제외된 이미지수</th>
-                        <th>변경여부</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for product in object_list %}
-                        <tr>
-                        <td><a href="{% url 'dashboard:imagefilter:product_detail' file_id=product.file_id product_id=product.id %}">{{ product.product_code }}</a> </td>
-                        <td><a href="{% url 'dashboard:imagefilter:product_detail' file_id=product.file_id product_id=product.id %}">{{ product.name}}</a> </td>
-                        <td>{{ product.num_image }}</td>
-                        <td>{{ product.num_exclude }}</td>
-                        <td>{% if product.change == None %}분류 전{% elif product.change == True %}<span class="text-danger font-weight-bold">변경 있음</span> {% else %}변경 없음{% endif %}</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                {% render_table table %}
+            </div>
+{#                <table class="table">#}
+{#                    <thead class="thead-dark">#}
+{#                    <tr>#}
+{#                        <th>고객사 상품코드</th>#}
+{#                        <th>상품명</th>#}
+{#                        <th>이미지수</th>#}
+{#                        <th>제외된 이미지수</th>#}
+{#                        <th>변경여부</th>#}
+{#                    </tr>#}
+{#                    </thead>#}
+{#                    <tbody>#}
+{#                    {% for product in object_list %}#}
+{#                        <tr>#}
+{#                        <td><a href="{% url 'dashboard:imagefilter:product_detail' file_id=product.file_id product_id=product.id %}">{{ product.product_code }}</a> </td>#}
+{#                        <td><a href="{% url 'dashboard:imagefilter:product_detail' file_id=product.file_id product_id=product.id %}">{{ product.name}}</a> </td>#}
+{#                        <td>{{ product.num_image }}</td>#}
+{#                        <td>{{ product.num_exclude }}</td>#}
+{#                        <td>{% if product.change == None %}분류 전{% elif product.change == True %}<span class="text-danger font-weight-bold">변경 있음</span> {% else %}변경 없음{% endif %}</td>#}
+{#                        </tr>#}
+{#                    {% endfor %}#}
+{#                    </tbody>#}
+{#                </table>#}
             </div>
         </div>
 
         <div class="row justify-content-center">
-            {% bootstrap_pagination page=page_obj %}
+{#            {% bootstrap_pagination page=page_obj %}#}
         </div>
     </div>
 {% endblock %}

@@ -82,8 +82,44 @@ class ImageFileActionView(LoginRequiredMixin, View):
         return HttpResponse(json.dumps(context), content_type='application/json')
 
 
-class ProductListView(LoginRequiredMixin, ListView):
-    paginate_by = 30
+class ProductTable(tables.Table):
+    class Meta:
+        model = Product
+        template_name = 'dashboard/imagefilter/image/bootstrap4.html'
+        attrs = {'class': 'table table-striped bg-white'}
+        fields = ('product_code', 'name', 'num_image', 'num_exclude', 'change')
+        sequence = ('product_code', 'name', 'num_image', 'num_exclude', 'change')
+
+    num_image = tables.Column(verbose_name='이미지')
+    num_exclude = tables.Column(verbose_name='제외된 이미지')
+
+    def render_product_code(self, record):
+        html = """<a href={url}>{code}</a>""".format(url=reverse_lazy('dashboard:imagefilter:product_detail',
+                                                                      kwargs={'file_id': record['file_id'],
+                                                                              'product_id': record['id']}),
+                                                     code=record['product_code'])
+        return mark_safe(html)
+
+    def render_name(self, record):
+        html = """<a href={url}>{name}</a>""".format(url=reverse_lazy('dashboard:imagefilter:product_detail',
+                                                                      kwargs={'file_id': record['file_id'],
+                                                                              'product_id': record['id']}),
+                                                     name=record['name'])
+        return mark_safe(html)
+
+    # def render_change(self, record):
+    #     change = record['change']
+    #     if change is True:
+    #         return '변경 있음'
+    #     elif change is False:
+    #         return '변경 없음'
+    #     else:
+    #         return '변경 전'
+
+
+class ProductListView(LoginRequiredMixin, tables.views.SingleTableMixin, ListView):
+    table_class = ProductTable
+    model = Product
     template_name = 'dashboard/imagefilter/product/list.html'
 
     def get_queryset(self):
@@ -94,6 +130,20 @@ class ProductListView(LoginRequiredMixin, ListView):
 
         return Product.objects.values('product_code', 'name', 'id', 'file_id', 'change').filter(file=file). \
             annotate(num_image=Count('image'), num_exclude=Count('image', filter=Q(image__type=3)))
+
+
+# class ProductListView(LoginRequiredMixin, ListView):
+#     paginate_by = 30
+#     template_name = 'dashboard/imagefilter/product/list.html'
+#
+#     def get_queryset(self):
+#         file_id = self.kwargs.get('file_id', None)
+#         file = get_object_or_404(File, id=file_id)
+#         if not file.has_permission(self.request.user):
+#             return HttpResponseRedirect(reverse_lazy('landing:permission_denied'))
+#
+#         return Product.objects.values('product_code', 'name', 'id', 'file_id', 'change').filter(file=file). \
+#             annotate(num_image=Count('image'), num_exclude=Count('image', filter=Q(image__type=3)))
 
 
 class ProductDetailView(LoginRequiredMixin, View):
@@ -119,13 +169,12 @@ class ImageTable(tables.Table):
         attrs = {'class': 'table table-striped bg-white'}
         fields = ('product', 'uri', 'type', 'action')
         sequence = ('product', 'type', 'uri', 'action')
-        # fields = ('selections', 'product', 'uri', 'type', 'action')
-        # sequence = ('selections', 'product', 'type', 'uri', 'action')
 
     uri = tables.Column(verbose_name='이미지')
     type = tables.Column()
     product = tables.Column()
     action = tables.Column(accessor='id', verbose_name='변경')
+
     # selections = tables.CheckBoxColumn(accessor='id', attrs = {"th__input": {"onclick": "toggle(this)"}}, orderable=False)
 
     def render_uri(self, record):
@@ -146,7 +195,8 @@ class ImageTable(tables.Table):
         if record.type == 0:
             return '분류 전'
         elif record.type == 1:
-            text = """<span class="text-warning font-weight-bold" data-toggle="popoverError" data-error="{error}">분류실패</span>""".format(error=record.error_str())
+            text = """<span class="text-warning font-weight-bold" data-toggle="popoverError" data-error="{error}">분류실패</span>""".format(
+                error=record.error_str())
             return mark_safe(text)
         elif record.type == 2:
             return '분류 중'
@@ -160,16 +210,20 @@ class ImageTable(tables.Table):
     def render_action(self, record):
         if record.type == 1:
             text = """<button type="button" class="btn btn-primary btn-sm" onclick='changeType({id}, 4);'>포함처리</button>
-            <button type="button" class="btn btn-danger btn-sm" onclick='changeType({id}, 3);'>제외처리</button>""".format(id=record.id)
+            <button type="button" class="btn btn-danger btn-sm" onclick='changeType({id}, 3);'>제외처리</button>""".format(
+                id=record.id)
         elif record.type == 3:
             text = """<button type="button" class="btn btn-primary btn-sm" onclick='changeType({id}, 4);'>포함처리</button>
-            <button type="button" class="btn btn-danger btn-sm" disabled onclick='changeType({id}, 3);'>제외처리</button>""".format(id=record.id)
+            <button type="button" class="btn btn-danger btn-sm" disabled onclick='changeType({id}, 3);'>제외처리</button>""".format(
+                id=record.id)
         elif record.type == 4:
             text = """<button type="button" class="btn btn-primary btn-sm" disabled onclick='changeType({id}, 4);'>포함처리</button>
-            <button type="button" class="btn btn-danger btn-sm" onclick='changeType({id}, 3);'>제외처리</button>""".format(id=record.id)
+            <button type="button" class="btn btn-danger btn-sm" onclick='changeType({id}, 3);'>제외처리</button>""".format(
+                id=record.id)
         else:
             text = """<button type="button" class="btn btn-primary btn-sm" disabled onclick='changeType({id}, 4);'>포함처리</button>
-            <button type="button" class="btn btn-danger btn-sm" disabled onclick='changeType({id}, 3);'>제외처리</button>""".format(id=record.id)
+            <button type="button" class="btn btn-danger btn-sm" disabled onclick='changeType({id}, 3);'>제외처리</button>""".format(
+                id=record.id)
         return mark_safe(text)
 
 
@@ -179,7 +233,7 @@ class ImageTypeFilter(FilterSet):
         fields = ['type']
 
 
-class ImageListView(tables.views.SingleTableMixin, FilterView):
+class ImageListView(LoginRequiredMixin, tables.views.SingleTableMixin, FilterView):
     table_class = ImageTable
     model = Image
     template_name = 'dashboard/imagefilter/image/list.html'
@@ -195,7 +249,7 @@ class ImageListView(tables.views.SingleTableMixin, FilterView):
         return Image.objects.filter(filter)
 
 
-class ImageTypeChangeView(View):
+class ImageTypeChangeView(LoginRequiredMixin, View):
     def post(self, request, image_id):
         image = get_object_or_404(Image, Q(id=image_id))
 
@@ -216,8 +270,3 @@ class ImageTypeChangeView(View):
             image.save()
             context = {'result': True, 'message': '성공.'}
             return HttpResponse(json.dumps(context), content_type='application/json')
-
-
-
-
-
